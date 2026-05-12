@@ -1,4 +1,14 @@
-const API_ROOT = import.meta.env.VITE_API_ROOT ?? '/api';
+/** Base URL for API calls. Paths in this app are like `/event`, `/admin/login` (they already include leading slash). */
+function normalizeApiRoot(raw: string | undefined): string {
+  const v = (raw ?? '/api').trim();
+  const base = v.replace(/\/+$/, '');
+  if (base === '' || base === '/api') return '/api';
+  if (base.endsWith('/api')) return base;
+  if (/^https?:\/\//i.test(base)) return `${base}/api`;
+  return base.startsWith('/') ? base : `/${base}`;
+}
+
+const API_ROOT = normalizeApiRoot(import.meta.env.VITE_API_ROOT as string | undefined);
 
 export class ApiError extends Error {
   status: number;

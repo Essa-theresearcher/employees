@@ -34,10 +34,19 @@ app.use(
 
 app.use(express.json({ limit: '1mb' }));
 
+app.get('/', (_req, res) =>
+  res.json({
+    ok: true,
+    service: 'coffee-and-code-api',
+    hint: 'JSON routes live under /api (e.g. GET /api/event). See GET /health.'
+  })
+);
+
 const uploadsRoot = path.resolve(process.cwd(), 'uploads');
 app.use('/uploads', express.static(uploadsRoot));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 const registerLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50 });
 
