@@ -18,7 +18,6 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
-    "@rollup/rollup-darwin-x64": "^4.60.3",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
