@@ -39,7 +39,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 | Setting | Value |
 |--------|--------|
-| Root Directory | *(repository root — leave default)* |
+| Root Directory | **Repository root (leave empty / default).** If you set this to `frontend`, Vercel uses `frontend/vercel.json` and a **standalone** install/build (no npm workspaces). Do **not** leave the dashboard build command as `npm run build -w frontend` in that case — it will fail with “No workspaces found”. |
 | Framework Preset | Other, or Vite if detected |
 | Install Command | `npm install --no-audit --no-fund` — see **Troubleshooting** below if the build log still shows `npm ci` |
 | Build Command | `npm run build -w frontend` |
@@ -54,6 +54,14 @@ The repo includes **`vercel.json`** with the same build/output settings and SPA 
 3. **Why:** `npm ci` installs every entry the lockfile records for Rollup’s platform-specific optional packages. On Linux that can surface `EBADPLATFORM` for macOS-only packages (`@rollup/rollup-darwin-x64`). `npm install` resolves for the current OS and skips incompatible optionals.
 
 `npm ci` is still fine on **Render / Railway / VPS** for the API (Linux-only CI or Linux-generated lockfiles); the pain point here is **Vercel’s Linux builder + a macOS-generated lockfile + `npm ci`**.
+
+### Troubleshooting: “No workspaces found” / `--workspace=frontend`
+
+The root `vercel.json` uses **`npm run build -w frontend`**, which only works when npm’s current directory is the **monorepo root** (the `package.json` that defines `"workspaces"`).
+
+1. In Vercel → **Settings** → **General** → **Root Directory**, clear the field so it is the **repository root** (recommended). Then the root `vercel.json` install/build and `outputDirectory` `frontend/dist` apply correctly.
+2. If you **intentionally** set Root Directory to **`frontend`**, use the repo’s **`frontend/vercel.json`**: install `npm install`, build `npm run build`, output **`dist`**. Remove any dashboard **Build Command** override that still says `npm run build -w frontend`.
+3. Vercel’s docs note that with a subdirectory root, the build **must not rely on leaving that directory** (e.g. `cd ..`) for app files. Prefer either **repo root** for this monorepo or the standalone **`frontend/vercel.json`** layout above.
 
 ### Frontend environment variables (Vercel → Settings → Environment Variables)
 
@@ -80,7 +88,8 @@ Redeploy after changing any `VITE_*` variable.
 | File | Purpose |
 |------|---------|
 | `.env.example` | Variable list for backend + frontend |
-| `vercel.json` | Vercel build/output + SPA rewrites |
+| `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
+| `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
 | `supabase/schema.sql` | Postgres DDL aligned with Prisma |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
