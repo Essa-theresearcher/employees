@@ -41,7 +41,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 |--------|--------|
 | Root Directory | *(repository root — leave default)* |
 | Framework Preset | Other, or Vite if detected |
-| Install Command | `npm ci` |
+| Install Command | `npm install --no-audit --no-fund` (avoid `npm ci` with macOS-generated lockfiles: Rollup optional native packages can trigger `EBADPLATFORM` on Vercel’s Linux builders) |
 | Build Command | `npm run build -w frontend` |
 | Output Directory | `frontend/dist` |
 
