@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ContributionFocus {
+  FRONTEND_DEVELOPMENT
+  BACKEND_DEVELOPMENT
+  UI_UX_DESIGN
+  DATA_RESEARCH
+  PRESENTATION_PITCHING
+  BUSINESS_STRATEGY
+  CONTENT_SOCIAL_MEDIA
+  PROJECT_MANAGEMENT
+  BEGINNER_LEARNING
+  OPEN_TO_ANY_ROLE
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum PaymentMethod {
+  MPESA
+  CASH
+  BANK
+}
+
+enum RegistrationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+/// Single-row counter for badge IDs (CC-0001).
+model BadgeSequence {
+  id      Int @id @default(1)
+  nextNum Int @default(0)
+}
+
+model Admin {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  registrations  Registration[]
+}
+
+model EventSettings {
+  id                   String   @id @default(uuid())
+  singletonKey         Int      @unique @default(1)
+  eventName            String   @default("Coffee & Code")
+  amountKes            Decimal  @db.Decimal(12, 2)
+  /// Label shown above the number (e.g. "Send Money", "Till number").
+  mpesaChannelLabel    String   @default("Send Money")
+  mpesaTillOrPaybill   String
+  accountReferenceHint String   @default("Use your full name")
+  /// Short schedule note for attendees (e.g. arrival time).
+  scheduleNote         String   @default("")
+  updatedAt            DateTime @updatedAt
+}
+
+model Registration {
+  id                       String              @id @default(uuid())
+  fullName                 String
+  phone                    String
+  email                    String
+  contributionFocus        ContributionFocus
+  skillLevel               SkillLevel
+  paymentMethod            PaymentMethod
+  mpesaTransactionCode     String?
+  mpesaConfirmationMessage String?
+  screenshotPath           String?
+  agreementAccepted        Boolean
+  status                   RegistrationStatus  @default(PENDING)
+  adminNote                String?
+  verifiedAt               DateTime?
+  verifiedById             String?
+  verifiedBy               Admin?              @relation(fields: [verifiedById], references: [id])
+  rejectedAt               DateTime?
+  checkedIn                Boolean             @default(false)
+  checkedInAt              DateTime?
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+
+  payment    Payment?
+  badge      Badge?
+  teamMember TeamMember?
+
+  @@unique([mpesaTransactionCode])
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([checkedIn])
+}
+
+model Payment {
+  id             String         @id @default(uuid())
+  registrationId String         @unique
+  registration   Registration   @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  amountKes      Decimal?       @db.Decimal(12, 2)
+  method         PaymentMethod
+  mpesaCode      String?
+  verified       Boolean        @default(false)
+}
+
+model Badge {
+  id             String       @id @default(uuid())
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  badgeId        String       @unique
+  qrTargetUrl    String
+  createdAt      DateTime     @default(now())
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  teamName    String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  members TeamMember[]
+  scores  Score[]
+}
+
+model Score {
+  id                       String   @id @default(uuid())
+  teamId                   String
+  team                     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  judgeName                String
+  ideaClarityScore         Int
+  technicalExecutionScore  Int
+  businessValueScore       Int
+  presentationScore        Int
+  teamworkScore            Int
+  totalScore               Int
+  comments                 String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([teamId, judgeName])
+  @@index([teamId])
+}
+
+model TeamMember {
+  id             String       @id @default(uuid())
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  teamId         String
+  team           Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  roleInTeam     String?
+  skills         String?
+  joinedAt       DateTime     @default(now())
+
+  @@index([teamId])
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  attendeeName  String
+  questionText  String
+  upvotes       Int      @default(0)
+  isAnswered    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([upvotes])
+  @@index([createdAt])
+}
+
+model Poll {
+  id        String     @id @default(uuid())
+  question  String
+  options   Json
+  isActive  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  votes     PollVote[]
+}
+
+model PollVote {
+  id             String   @id @default(uuid())
+  pollId         String
+  poll           Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  voterKey       String
+  selectedOption String
+  createdAt      DateTime @default(now())
+
+  @@unique([pollId, voterKey])
+  @@index([pollId])
+}

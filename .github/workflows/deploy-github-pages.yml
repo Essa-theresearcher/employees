@@ -1,0 +1,59 @@
+# Deploy the Vite frontend to GitHub Pages.
+# GitHub cannot run Express or PostgreSQL — host the API + DB separately (e.g. Render + Neon),
+# then set repository secrets/variables below.
+
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        env:
+          # Full URL to your live API, e.g. https://your-api.onrender.com/api
+          VITE_API_ROOT: ${{ secrets.VITE_API_ROOT }}
+          # Default: /repository-name/ for GitHub project Pages. Override with repo variable VITE_BASE_PATH (e.g. /).
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || format('/{0}/', github.event.repository.name) }}
+        run: npm run build -w frontend
+
+      # GitHub Pages serves 404.html for unknown paths so React Router deep links work on refresh.
+      - name: SPA fallback (404.html)
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

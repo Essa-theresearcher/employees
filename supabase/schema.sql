@@ -1,0 +1,255 @@
+-- Coffee & Code — PostgreSQL schema (matches Prisma). Registration uses contributionFocus (enum ContributionFocus).
+-- Apply via `npm run db:push -w backend` or Supabase SQL Editor on a fresh DB.
+
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
+-- CreateEnum
+CREATE TYPE "ContributionFocus" AS ENUM ('FRONTEND_DEVELOPMENT', 'BACKEND_DEVELOPMENT', 'UI_UX_DESIGN', 'DATA_RESEARCH', 'PRESENTATION_PITCHING', 'BUSINESS_STRATEGY', 'CONTENT_SOCIAL_MEDIA', 'PROJECT_MANAGEMENT', 'BEGINNER_LEARNING', 'OPEN_TO_ANY_ROLE');
+
+-- CreateEnum
+CREATE TYPE "SkillLevel" AS ENUM ('BEGINNER', 'INTERMEDIATE', 'ADVANCED');
+
+-- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('MPESA', 'CASH', 'BANK');
+
+-- CreateEnum
+CREATE TYPE "RegistrationStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
+
+-- CreateTable
+CREATE TABLE "BadgeSequence" (
+    "id" INTEGER NOT NULL DEFAULT 1,
+    "nextNum" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "BadgeSequence_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Admin" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EventSettings" (
+    "id" TEXT NOT NULL,
+    "singletonKey" INTEGER NOT NULL DEFAULT 1,
+    "eventName" TEXT NOT NULL DEFAULT 'Coffee & Code',
+    "amountKes" DECIMAL(12,2) NOT NULL,
+    "mpesaChannelLabel" TEXT NOT NULL DEFAULT 'Send Money',
+    "mpesaTillOrPaybill" TEXT NOT NULL,
+    "accountReferenceHint" TEXT NOT NULL DEFAULT 'Use your full name',
+    "scheduleNote" TEXT NOT NULL DEFAULT '',
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "EventSettings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Registration" (
+    "id" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "contributionFocus" "ContributionFocus" NOT NULL,
+    "skillLevel" "SkillLevel" NOT NULL,
+    "paymentMethod" "PaymentMethod" NOT NULL,
+    "mpesaTransactionCode" TEXT,
+    "mpesaConfirmationMessage" TEXT,
+    "screenshotPath" TEXT,
+    "agreementAccepted" BOOLEAN NOT NULL,
+    "status" "RegistrationStatus" NOT NULL DEFAULT 'PENDING',
+    "adminNote" TEXT,
+    "verifiedAt" TIMESTAMP(3),
+    "verifiedById" TEXT,
+    "rejectedAt" TIMESTAMP(3),
+    "checkedIn" BOOLEAN NOT NULL DEFAULT false,
+    "checkedInAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Registration_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" TEXT NOT NULL,
+    "registrationId" TEXT NOT NULL,
+    "amountKes" DECIMAL(12,2),
+    "method" "PaymentMethod" NOT NULL,
+    "mpesaCode" TEXT,
+    "verified" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Badge" (
+    "id" TEXT NOT NULL,
+    "registrationId" TEXT NOT NULL,
+    "badgeId" TEXT NOT NULL,
+    "qrTargetUrl" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Badge_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Team" (
+    "id" TEXT NOT NULL,
+    "teamName" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Score" (
+    "id" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "judgeName" TEXT NOT NULL,
+    "ideaClarityScore" INTEGER NOT NULL,
+    "technicalExecutionScore" INTEGER NOT NULL,
+    "businessValueScore" INTEGER NOT NULL,
+    "presentationScore" INTEGER NOT NULL,
+    "teamworkScore" INTEGER NOT NULL,
+    "totalScore" INTEGER NOT NULL,
+    "comments" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Score_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TeamMember" (
+    "id" TEXT NOT NULL,
+    "registrationId" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "roleInTeam" TEXT,
+    "skills" TEXT,
+    "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TeamMember_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Question" (
+    "id" TEXT NOT NULL,
+    "attendeeName" TEXT NOT NULL,
+    "questionText" TEXT NOT NULL,
+    "upvotes" INTEGER NOT NULL DEFAULT 0,
+    "isAnswered" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Poll" (
+    "id" TEXT NOT NULL,
+    "question" TEXT NOT NULL,
+    "options" JSONB NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Poll_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PollVote" (
+    "id" TEXT NOT NULL,
+    "pollId" TEXT NOT NULL,
+    "voterKey" TEXT NOT NULL,
+    "selectedOption" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PollVote_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EventSettings_singletonKey_key" ON "EventSettings"("singletonKey");
+
+-- CreateIndex
+CREATE INDEX "Registration_status_idx" ON "Registration"("status");
+
+-- CreateIndex
+CREATE INDEX "Registration_email_idx" ON "Registration"("email");
+
+-- CreateIndex
+CREATE INDEX "Registration_phone_idx" ON "Registration"("phone");
+
+-- CreateIndex
+CREATE INDEX "Registration_checkedIn_idx" ON "Registration"("checkedIn");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Registration_mpesaTransactionCode_key" ON "Registration"("mpesaTransactionCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Payment_registrationId_key" ON "Payment"("registrationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Badge_registrationId_key" ON "Badge"("registrationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Badge_badgeId_key" ON "Badge"("badgeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Team_teamName_key" ON "Team"("teamName");
+
+-- CreateIndex
+CREATE INDEX "Score_teamId_idx" ON "Score"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Score_teamId_judgeName_key" ON "Score"("teamId", "judgeName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TeamMember_registrationId_key" ON "TeamMember"("registrationId");
+
+-- CreateIndex
+CREATE INDEX "TeamMember_teamId_idx" ON "TeamMember"("teamId");
+
+-- CreateIndex
+CREATE INDEX "Question_upvotes_idx" ON "Question"("upvotes");
+
+-- CreateIndex
+CREATE INDEX "Question_createdAt_idx" ON "Question"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "PollVote_pollId_idx" ON "PollVote"("pollId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PollVote_pollId_voterKey_key" ON "PollVote"("pollId", "voterKey");
+
+-- AddForeignKey
+ALTER TABLE "Registration" ADD CONSTRAINT "Registration_verifiedById_fkey" FOREIGN KEY ("verifiedById") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Badge" ADD CONSTRAINT "Badge_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Score" ADD CONSTRAINT "Score_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
