@@ -41,11 +41,19 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 |--------|--------|
 | Root Directory | *(repository root — leave default)* |
 | Framework Preset | Other, or Vite if detected |
-| Install Command | `npm install --no-audit --no-fund` (avoid `npm ci` with macOS-generated lockfiles: Rollup optional native packages can trigger `EBADPLATFORM` on Vercel’s Linux builders) |
+| Install Command | `npm install --no-audit --no-fund` — see **Troubleshooting** below if the build log still shows `npm ci` |
 | Build Command | `npm run build -w frontend` |
 | Output Directory | `frontend/dist` |
 
 The repo includes **`vercel.json`** with the same build/output settings and SPA **rewrites** so client-side routes work.
+
+### Troubleshooting: `EBADPLATFORM` / `@rollup/rollup-darwin-x64` / “Command npm ci exited with 1”
+
+1. **Dashboard overrides `vercel.json`.** In Vercel → your project → **Settings** → **General** → **Build & Development Settings**, open **Install Command**. If **Override** is enabled and the field contains `npm ci`, Vercel will keep using `npm ci` even though the repo’s `vercel.json` says `npm install`. Either **turn off** the Install Command override (recommended, so `vercel.json` applies) **or** set the override explicitly to: `npm install --no-audit --no-fund`.
+2. **Root Directory** must be the **repository root** (empty / default). If it is set to `frontend`, Vercel may not use the root `vercel.json`, and `npm run build -w frontend` will not match a normal workspace install from this repo.
+3. **Why:** `npm ci` installs every entry the lockfile records for Rollup’s platform-specific optional packages. On Linux that can surface `EBADPLATFORM` for macOS-only packages (`@rollup/rollup-darwin-x64`). `npm install` resolves for the current OS and skips incompatible optionals.
+
+`npm ci` is still fine on **Render / Railway / VPS** for the API (Linux-only CI or Linux-generated lockfiles); the pain point here is **Vercel’s Linux builder + a macOS-generated lockfile + `npm ci`**.
 
 ### Frontend environment variables (Vercel → Settings → Environment Variables)
 
