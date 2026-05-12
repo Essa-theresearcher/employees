@@ -1,10 +1,11 @@
-# Railway / Docker: set service root directory to `backend` in the Railway dashboard.
+# Docker / Render: set the service **Root Directory** to `backend` (or keep Dockerfile here and context = backend).
+# There is no package-lock.json inside `backend/` (lockfile lives at monorepo root), so we use `npm install`.
 FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install --no-audit --no-fund
 
 COPY prisma ./prisma/
 COPY src ./src/
@@ -19,7 +20,7 @@ FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=builder /app/package.json /app/package-lock.json ./
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
