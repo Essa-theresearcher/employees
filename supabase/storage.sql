@@ -1,5 +1,8 @@
--- Supabase Storage: payment screenshot bucket (run in SQL Editor after Storage is enabled).
--- The API uploads with SUPABASE_SERVICE_ROLE_KEY (bypasses RLS). Public read allows admin UI to load images via public URLs.
+-- Supabase Storage: payment screenshot bucket (run in SQL Editor after Storage is enabled in the project).
+-- Re-run safe (idempotent): bucket uses ON CONFLICT DO UPDATE; policy is recreated via DROP IF EXISTS + CREATE.
+-- Order vs full-setup.sql: either order is fine — this touches only storage.*, not public.*.
+-- The API uploads with SUPABASE_SERVICE_ROLE_KEY (bypasses RLS). Public read allows the admin UI to load images via public URLs.
+-- Backend: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY; optional SUPABASE_STORAGE_BUCKET (defaults to registration-uploads).
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (

@@ -176,7 +176,7 @@ Use when you want a **clean slate** for the app tables (all registrations, admin
 | `supabase/full-setup.sql` | Full DDL (idempotent) + default `EventSettings` / `BadgeSequence`. For a clean `public`, run **`reset-public-schema.sql`** first |
 | `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) — safe when schema is already applied |
 | `supabase/schema.sql` | Same DDL as embedded in `full-setup.sql` (idempotent; `IF NOT EXISTS` does not alter already-existing tables) |
-| `supabase/storage.sql` | Storage bucket + read policy |
+| `supabase/storage.sql` | **`storage`** bucket `registration-uploads` + public read policy — **re-run safe**; run after Storage is enabled (not affected by `reset-public-schema.sql`) |
 
 ## 8. Free tier notes
 
