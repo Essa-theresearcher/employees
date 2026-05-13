@@ -1,6 +1,8 @@
 -- Coffee & Code — FULL setup: schema (matches Prisma) + default EventSettings + BadgeSequence.
--- Prefer `npm run db:push -w backend` on an existing project; use this file mainly for a truly empty DB.
--- If enums/tables already exist (42710 / "already exists"), do NOT re-run the DDL — use only supabase/ensure-event-settings.sql or npm run db:seed -w backend.
+--
+-- Brand-new public schema: run supabase/reset-public-schema.sql first, then this file.
+-- On an existing DB you want to keep: prefer `npm run db:push -w backend`, or only
+-- supabase/ensure-event-settings.sql / npm run db:seed -w backend if you just need defaults.
 
 -- Coffee & Code — PostgreSQL schema (matches Prisma). Registration uses contributionFocus (enum ContributionFocus).
 -- Apply via `npm run db:push -w backend` or Supabase SQL Editor on a fresh DB.

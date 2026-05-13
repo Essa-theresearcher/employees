@@ -153,7 +153,18 @@ Redeploy after changing any `VITE_*` variable.
 - Submit a test registration with an image → row appears in admin, screenshot loads (Supabase public URL or proxied `/uploads` in dev).  
 - Admin login (Supabase or legacy) → payments / registrations / teams / judging / Q&A / polls / certificates behave as before.
 
-## 6. Files reference
+## 6. Brand-new Supabase `public` schema (nuke + reinstall)
+
+Use when you want a **clean slate** for the app tables (all registrations, admin rows, etc. are deleted).
+
+1. **Backup** anything you care about (Supabase dashboard → Database → Backups, or export tables).
+2. Supabase → **SQL Editor** → run **`supabase/reset-public-schema.sql`** (drops and recreates `public`).
+3. In the same editor (or a new query), run **`supabase/full-setup.sql`** end-to-end.
+4. If you use payment screenshots from Storage, run **`supabase/storage.sql`** (safe to re-run).
+
+`auth` users, `storage.objects` files, and buckets are **not** removed by step 2; only objects in **`public`** are. To clear uploaded files too, delete them from the Storage UI or adjust policies as needed.
+
+## 7. Files reference
 
 | File | Purpose |
 |------|---------|
@@ -161,12 +172,13 @@ Redeploy after changing any `VITE_*` variable.
 | `.env.example` | Variable list for backend + frontend |
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
+| `supabase/reset-public-schema.sql` | **`DROP SCHEMA public CASCADE`** + recreate + grants — run **before** `full-setup.sql` for a full reset |
 | `supabase/full-setup.sql` | Full DDL + default `EventSettings` / `BadgeSequence`. Enums skip if present (**42710**); if tables already exist, stop — use **`ensure-event-settings.sql`** or **`npm run db:seed -w backend`** instead |
 | `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) — safe when schema is already applied |
 | `supabase/schema.sql` | Postgres DDL aligned with Prisma (enums idempotent; re-running full script still errors on existing tables) |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
-## 7. Free tier notes
+## 8. Free tier notes
 
 - **GitHub Pages**: public static hosting; [usage limits](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages) apply.  
 - **Vercel** Hobby (if used): generous static hosting; watch bandwidth and build minutes.  
