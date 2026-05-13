@@ -76,7 +76,7 @@ The workflow **Deploy frontend to GitHub Pages** runs on pushes to **`main`** or
 
      | Name | Purpose |
      |------|---------|
-     | `VITE_API_ROOT` | Full API base, e.g. `https://your-api.onrender.com/api` |
+     | `VITE_API_ROOT` | **Required** for GitHub Pages: full Render origin, e.g. `https://your-service.onrender.com` (omit trailing `/api`; the app adds it). If this is missing at build time, the browser calls `/api` on `github.io` and you get **HTML / 404** errors. |
      | `VITE_SUPABASE_URL` | Optional; Supabase project URL |
      | `VITE_SUPABASE_ANON_KEY` | Optional; Supabase anon key |
 

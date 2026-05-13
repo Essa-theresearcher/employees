@@ -10,6 +10,18 @@ function normalizeApiRoot(raw: string | undefined): string {
 
 const API_ROOT = normalizeApiRoot(import.meta.env.VITE_API_ROOT as string | undefined);
 
+const configuredViteApiRoot = Boolean(
+  typeof import.meta.env.VITE_API_ROOT === 'string' && import.meta.env.VITE_API_ROOT.trim()
+);
+
+if (import.meta.env.PROD && typeof window !== 'undefined' && !configuredViteApiRoot) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[Coffee & Code] VITE_API_ROOT was not set at build time. Requests go to /api on this site (e.g. GitHub Pages) and will fail. ' +
+      'Set GitHub Actions secret VITE_API_ROOT to your Render API origin (e.g. https://YOUR-SERVICE.onrender.com), then redeploy.'
+  );
+}
+
 export class ApiError extends Error {
   status: number;
   payload: unknown;
@@ -67,7 +79,23 @@ function extractErrorMessage(res: Response, payload: unknown): string {
   if (typeof payload === 'string') {
     const t = payload.trim();
     if (!t) return statusFallbackMessage(res.status);
-    if (t.startsWith('<')) return `${res.status} ${res.statusText || 'Error'} — server returned HTML (wrong URL or proxy error)`;
+    if (t.startsWith('<')) {
+      const relativeApi = !/^https?:\/\//i.test(API_ROOT);
+      if (relativeApi && import.meta.env.PROD && !configuredViteApiRoot) {
+        return (
+          'API calls are going to this website instead of your Render server (missing VITE_API_ROOT at build time). ' +
+          'Repository → Settings → Secrets and variables → Actions → set VITE_API_ROOT to https://YOUR-SERVICE.onrender.com ' +
+          '(the app adds /api), then run the deploy workflow again.'
+        );
+      }
+      if (relativeApi && import.meta.env.PROD) {
+        return (
+          `${res.status} — server returned HTML instead of JSON. Your VITE_API_ROOT may be wrong, or the API URL is not reachable. ` +
+            'Use the full https origin of your Render service; paths like /event are added under /api automatically.'
+        );
+      }
+      return `${res.status} ${res.statusText || 'Error'} — server returned HTML (wrong API URL or the service returned an error page).`;
+    }
     return t.length > 180 ? `${t.slice(0, 180)}…` : t;
   }
   const st = res.statusText?.trim();
