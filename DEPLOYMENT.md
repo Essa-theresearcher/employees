@@ -64,7 +64,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 ## 2. API hosting (Express)
 
-1. Build command (example): `npm install && npm run build -w backend` (use `npm ci` on Linux if you prefer a clean lockfile install).  
+1. Build command (example): `npm install && npm run prisma:generate -w backend && npm run build -w backend` (use `npm ci` on Linux if you prefer a clean lockfile install). Ensure **`prisma generate` runs in the same environment** that will run the server (or use `binaryTargets` in `schema.prisma` as in this repo — `debian-openssl-3.0.x` for Render / `node:20-bookworm` Docker).
 2. Start command: `npm run start -w backend` (runs `node dist/server.js`).  
 3. Set environment variables (see root `.env.example`): at minimum `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `PUBLIC_APP_URL`, and for cloud uploads `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.  
 4. Expose the app at a stable HTTPS URL. If the app is mounted at the root, routes are `/api/...` and `/health` as in `backend/src/app.ts`.  
