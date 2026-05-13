@@ -36,13 +36,15 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 **Render logs: `FATAL: Tenant or user not found` (Prisma cannot connect):** Almost always a bad **`DATABASE_URL`** for Supabase, not application code. Do this: (1) Supabase dashboard → **Project Settings → Database** — confirm the project is **not paused**. (2) Copy the **URI** under **Connection string** for the **direct** Postgres host **`db.<project-ref>.supabase.co`** on port **`5432`** (user **`postgres`**, password = database password you set). Paste into Render as **`DATABASE_URL`** and append **`?sslmode=require`** if it is not already in the string. (3) If you intentionally use the **pooler** host (port **6543**), Supabase often requires the username format **`postgres.<project-ref>`** (not just `postgres`); wrong pooler credentials produce this exact error. (4) URL-encode special characters in the password (`@` → `%40`, etc.). Redeploy after saving env.
 
+**Supabase session pooler (IPv4 / shared pooler, port 5432):** In the dashboard use **Connect** → **Session pooler**. The URI looks like `postgres://postgres.<YOUR_PROJECT_REF>:<PASSWORD>@aws-0-<REGION>.pooler.supabase.com:5432/postgres` — note the username is **`postgres.` + project ref**, not plain `postgres`. If you paste a pooler host but leave the user as `postgres` only, you get **`Tenant or user not found`**. For **Render** (long‑lived Node), the **direct** `db.*.supabase.co:5432` URI is usually simpler unless you need IPv4 and have no add-on — then use the **session** string exactly as Supabase shows it.
+
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Database**  
-   - Settings → Database → copy the **URI** (host **`db.<project-ref>.supabase.co`**, port **`5432`**, user **`postgres`**). Use it as **`DATABASE_URL`** on Render. Append **`?sslmode=require`** if not already present.  
-   - Avoid the **pooler** URL on port **6543** unless you follow Supabase’s username rules (`postgres.<project-ref>` for transaction pooler); a mismatched pooler string often yields **`FATAL: Tenant or user not found`**.  
-   - Optional: use the pooler later with Prisma’s `directUrl` / `?pgbouncer=true` notes when you need it.
+   - **Simplest for Render:** Settings → Database → **Connection string** → **URI** with host **`db.<project-ref>.supabase.co`**, port **`5432`**, user **`postgres`**. Add **`?sslmode=require`** if missing.  
+   - **Session pooler (e.g. need IPv4):** Dashboard **Connect** → method **Session pooler**. Username must be **`postgres.<project-ref>`** (with a dot), host like **`aws-0-<region>.pooler.supabase.com`**, port **`5432`**. Copy the full URI Supabase gives you — do not change the username to plain `postgres` or you get **`FATAL: Tenant or user not found`**.  
+   - **Transaction pooler (port 6543):** different rules; Prisma often needs **`?pgbouncer=true`** and a separate direct URL for migrations — see [Supabase + Prisma](https://supabase.com/docs/guides/database/prisma). Prefer **direct** or **session** for this Express API unless you know you need transaction mode.
 3. **SQL schema**  
    - Preferred: from the repo root, with `DATABASE_URL` set in `backend/.env`, run:
      - `npm install` (or `npm ci` on Linux CI)
