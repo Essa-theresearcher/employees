@@ -15,10 +15,22 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 export const app = express();
 
-const allowedOrigins = env.corsOrigin
+const allowedOriginEntries = env.corsOrigin
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
+
+/** Browser Origin is scheme+host+port (no path). Entries may include a path (e.g. GitHub Pages repo URL). */
+function originIsAllowed(requestOrigin: string): boolean {
+  const o = requestOrigin.toLowerCase();
+  return allowedOriginEntries.some((entry) => {
+    try {
+      return new URL(entry).origin.toLowerCase() === o;
+    } catch {
+      return entry.toLowerCase() === o;
+    }
+  });
+}
 
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -26,7 +38,7 @@ app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
-      return cb(null, allowedOrigins.includes(origin));
+      return cb(null, originIsAllowed(origin));
     },
     credentials: true
   })

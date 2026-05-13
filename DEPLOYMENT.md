@@ -18,8 +18,8 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 1. Set **`DATABASE_URL`**, **`JWT_SECRET`**, **`CORS_ORIGIN`**, **`PUBLIC_APP_URL`**.  
 2. Set **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** if you use Storage and/or Supabase Auth on admin routes.  
-3. **`CORS_ORIGIN`** must list the **exact** browser origin of your live frontend (e.g. `https://YOUR_USER.github.io/YOUR_REPO` for GitHub project Pages), comma-separated with **no spaces**. **`PUBLIC_APP_URL`** should be that same frontend URL people open in the browser.  
-4. **`CORS_ORIGIN`** should also include `http://localhost:5173` if you develop locally against production API (optional).
+3. **`CORS_ORIGIN`** must list your **frontend origin(s)** (comma-separated, **no spaces**). The browser sends **`Origin: scheme + host + port` only** (no path). For GitHub **project** Pages at `https://user.github.io/repo/`, that header is still **`https://user.github.io`**. You may list `https://user.github.io` or the full repo URL — the API matches by **origin**. Include `http://localhost:5173` for local dev if needed.  
+4. **`PUBLIC_APP_URL`** should be the full URL people use to open the app (can include the repo path), e.g. `https://YOUR_USER.github.io/YOUR_REPO`.
 
 **You — GitHub (dashboard, frontend only):**
 

@@ -107,11 +107,21 @@ async function doFetch(url: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(url, init);
   } catch (e) {
-    const hint =
-      e instanceof TypeError
-        ? 'Network error (offline, wrong API URL, or browser blocked the request — check CORS on the server).'
-        : 'Request could not be sent.';
-    throw new ApiError(hint, 0, e);
+    if (!(e instanceof TypeError)) {
+      throw new ApiError('Request could not be sent.', 0, e);
+    }
+    const parts: string[] = [
+      'Could not reach the API (browser blocked the request before a response). Common causes:'
+    ];
+    if (typeof window !== 'undefined' && window.location?.protocol === 'https:' && /^http:\/\//i.test(API_ROOT)) {
+      parts.push('• Mixed content: this page is https but VITE_API_ROOT uses http — use https:// for your Render URL.');
+    }
+    parts.push(
+      `• CORS on Render: set CORS_ORIGIN to include your site’s origin (${typeof window !== 'undefined' ? window.location.origin : 'your frontend origin'}). You may list https://user.github.io/your-repo; the API matches the host only.`,
+      `• Wrong API URL: requests go to ${API_ROOT} (from VITE_API_ROOT at build time).`,
+      '• Offline or DNS: confirm the Render service is up (open the same URL in a new tab).'
+    );
+    throw new ApiError(parts.join(' '), 0, e);
   }
 }
 
