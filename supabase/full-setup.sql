@@ -1,11 +1,10 @@
 -- Coffee & Code — FULL setup: schema (matches Prisma) + default EventSettings + BadgeSequence.
---
--- Brand-new public schema: run supabase/reset-public-schema.sql first, then this file.
+-- DDL is idempotent (re-run safe). For a true empty public schema, reset-public-schema.sql first.
 -- On an existing DB you want to keep: prefer `npm run db:push -w backend`, or only
 -- supabase/ensure-event-settings.sql / npm run db:seed -w backend if you just need defaults.
 
 -- Coffee & Code — PostgreSQL schema (matches Prisma). Registration uses contributionFocus (enum ContributionFocus).
--- Apply via `npm run db:push -w backend` or Supabase SQL Editor on a fresh DB.
+-- Apply via `npm run db:push -w backend` or Supabase SQL Editor. DDL below is idempotent (re-run safe).
 
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
@@ -36,7 +35,7 @@ EXCEPTION
 END $$;
 
 -- CreateTable
-CREATE TABLE "BadgeSequence" (
+CREATE TABLE IF NOT EXISTS "BadgeSequence" (
     "id" INTEGER NOT NULL DEFAULT 1,
     "nextNum" INTEGER NOT NULL DEFAULT 0,
 
@@ -44,7 +43,7 @@ CREATE TABLE "BadgeSequence" (
 );
 
 -- CreateTable
-CREATE TABLE "Admin" (
+CREATE TABLE IF NOT EXISTS "Admin" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
@@ -55,7 +54,7 @@ CREATE TABLE "Admin" (
 );
 
 -- CreateTable
-CREATE TABLE "EventSettings" (
+CREATE TABLE IF NOT EXISTS "EventSettings" (
     "id" TEXT NOT NULL,
     "singletonKey" INTEGER NOT NULL DEFAULT 1,
     "eventName" TEXT NOT NULL DEFAULT 'Coffee & Code',
@@ -70,7 +69,7 @@ CREATE TABLE "EventSettings" (
 );
 
 -- CreateTable
-CREATE TABLE "Registration" (
+CREATE TABLE IF NOT EXISTS "Registration" (
     "id" TEXT NOT NULL,
     "fullName" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
@@ -96,7 +95,7 @@ CREATE TABLE "Registration" (
 );
 
 -- CreateTable
-CREATE TABLE "Payment" (
+CREATE TABLE IF NOT EXISTS "Payment" (
     "id" TEXT NOT NULL,
     "registrationId" TEXT NOT NULL,
     "amountKes" DECIMAL(12,2),
@@ -108,7 +107,7 @@ CREATE TABLE "Payment" (
 );
 
 -- CreateTable
-CREATE TABLE "Badge" (
+CREATE TABLE IF NOT EXISTS "Badge" (
     "id" TEXT NOT NULL,
     "registrationId" TEXT NOT NULL,
     "badgeId" TEXT NOT NULL,
@@ -119,7 +118,7 @@ CREATE TABLE "Badge" (
 );
 
 -- CreateTable
-CREATE TABLE "Team" (
+CREATE TABLE IF NOT EXISTS "Team" (
     "id" TEXT NOT NULL,
     "teamName" TEXT NOT NULL,
     "description" TEXT,
@@ -130,7 +129,7 @@ CREATE TABLE "Team" (
 );
 
 -- CreateTable
-CREATE TABLE "Score" (
+CREATE TABLE IF NOT EXISTS "Score" (
     "id" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
     "judgeName" TEXT NOT NULL,
@@ -148,7 +147,7 @@ CREATE TABLE "Score" (
 );
 
 -- CreateTable
-CREATE TABLE "TeamMember" (
+CREATE TABLE IF NOT EXISTS "TeamMember" (
     "id" TEXT NOT NULL,
     "registrationId" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
@@ -160,7 +159,7 @@ CREATE TABLE "TeamMember" (
 );
 
 -- CreateTable
-CREATE TABLE "Question" (
+CREATE TABLE IF NOT EXISTS "Question" (
     "id" TEXT NOT NULL,
     "attendeeName" TEXT NOT NULL,
     "questionText" TEXT NOT NULL,
@@ -172,7 +171,7 @@ CREATE TABLE "Question" (
 );
 
 -- CreateTable
-CREATE TABLE "Poll" (
+CREATE TABLE IF NOT EXISTS "Poll" (
     "id" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "options" JSONB NOT NULL,
@@ -184,7 +183,7 @@ CREATE TABLE "Poll" (
 );
 
 -- CreateTable
-CREATE TABLE "PollVote" (
+CREATE TABLE IF NOT EXISTS "PollVote" (
     "id" TEXT NOT NULL,
     "pollId" TEXT NOT NULL,
     "voterKey" TEXT NOT NULL,
@@ -195,82 +194,104 @@ CREATE TABLE "PollVote" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Admin_email_key" ON "Admin"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "EventSettings_singletonKey_key" ON "EventSettings"("singletonKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "EventSettings_singletonKey_key" ON "EventSettings"("singletonKey");
 
 -- CreateIndex
-CREATE INDEX "Registration_status_idx" ON "Registration"("status");
+CREATE INDEX IF NOT EXISTS "Registration_status_idx" ON "Registration"("status");
 
 -- CreateIndex
-CREATE INDEX "Registration_email_idx" ON "Registration"("email");
+CREATE INDEX IF NOT EXISTS "Registration_email_idx" ON "Registration"("email");
 
 -- CreateIndex
-CREATE INDEX "Registration_phone_idx" ON "Registration"("phone");
+CREATE INDEX IF NOT EXISTS "Registration_phone_idx" ON "Registration"("phone");
 
 -- CreateIndex
-CREATE INDEX "Registration_checkedIn_idx" ON "Registration"("checkedIn");
+CREATE INDEX IF NOT EXISTS "Registration_checkedIn_idx" ON "Registration"("checkedIn");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Registration_mpesaTransactionCode_key" ON "Registration"("mpesaTransactionCode");
+CREATE UNIQUE INDEX IF NOT EXISTS "Registration_mpesaTransactionCode_key" ON "Registration"("mpesaTransactionCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Payment_registrationId_key" ON "Payment"("registrationId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Payment_registrationId_key" ON "Payment"("registrationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Badge_registrationId_key" ON "Badge"("registrationId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Badge_registrationId_key" ON "Badge"("registrationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Badge_badgeId_key" ON "Badge"("badgeId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Badge_badgeId_key" ON "Badge"("badgeId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Team_teamName_key" ON "Team"("teamName");
+CREATE UNIQUE INDEX IF NOT EXISTS "Team_teamName_key" ON "Team"("teamName");
 
 -- CreateIndex
-CREATE INDEX "Score_teamId_idx" ON "Score"("teamId");
+CREATE INDEX IF NOT EXISTS "Score_teamId_idx" ON "Score"("teamId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Score_teamId_judgeName_key" ON "Score"("teamId", "judgeName");
+CREATE UNIQUE INDEX IF NOT EXISTS "Score_teamId_judgeName_key" ON "Score"("teamId", "judgeName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TeamMember_registrationId_key" ON "TeamMember"("registrationId");
+CREATE UNIQUE INDEX IF NOT EXISTS "TeamMember_registrationId_key" ON "TeamMember"("registrationId");
 
 -- CreateIndex
-CREATE INDEX "TeamMember_teamId_idx" ON "TeamMember"("teamId");
+CREATE INDEX IF NOT EXISTS "TeamMember_teamId_idx" ON "TeamMember"("teamId");
 
 -- CreateIndex
-CREATE INDEX "Question_upvotes_idx" ON "Question"("upvotes");
+CREATE INDEX IF NOT EXISTS "Question_upvotes_idx" ON "Question"("upvotes");
 
 -- CreateIndex
-CREATE INDEX "Question_createdAt_idx" ON "Question"("createdAt");
+CREATE INDEX IF NOT EXISTS "Question_createdAt_idx" ON "Question"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "PollVote_pollId_idx" ON "PollVote"("pollId");
+CREATE INDEX IF NOT EXISTS "PollVote_pollId_idx" ON "PollVote"("pollId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PollVote_pollId_voterKey_key" ON "PollVote"("pollId", "voterKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "PollVote_pollId_voterKey_key" ON "PollVote"("pollId", "voterKey");
 
--- AddForeignKey
-ALTER TABLE "Registration" ADD CONSTRAINT "Registration_verifiedById_fkey" FOREIGN KEY ("verifiedById") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- AddForeignKey (idempotent)
+DO $$ BEGIN
+  ALTER TABLE "Registration" ADD CONSTRAINT "Registration_verifiedById_fkey" FOREIGN KEY ("verifiedById") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "Payment" ADD CONSTRAINT "Payment_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "Badge" ADD CONSTRAINT "Badge_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "Badge" ADD CONSTRAINT "Badge_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "Score" ADD CONSTRAINT "Score_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "Score" ADD CONSTRAINT "Score_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_registrationId_fkey" FOREIGN KEY ("registrationId") REFERENCES "Registration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 
 -- =============================================================================

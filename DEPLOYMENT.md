@@ -173,9 +173,9 @@ Use when you want a **clean slate** for the app tables (all registrations, admin
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
 | `supabase/reset-public-schema.sql` | **`DROP SCHEMA public CASCADE`** + recreate + grants — run **before** `full-setup.sql` for a full reset |
-| `supabase/full-setup.sql` | Full DDL + default `EventSettings` / `BadgeSequence`. Enums skip if present (**42710**); if tables already exist, stop — use **`ensure-event-settings.sql`** or **`npm run db:seed -w backend`** instead |
+| `supabase/full-setup.sql` | Full DDL (idempotent) + default `EventSettings` / `BadgeSequence`. For a clean `public`, run **`reset-public-schema.sql`** first |
 | `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) — safe when schema is already applied |
-| `supabase/schema.sql` | Postgres DDL aligned with Prisma (enums idempotent; re-running full script still errors on existing tables) |
+| `supabase/schema.sql` | Same DDL as embedded in `full-setup.sql` (idempotent; `IF NOT EXISTS` does not alter already-existing tables) |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
 ## 8. Free tier notes
