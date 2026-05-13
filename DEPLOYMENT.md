@@ -34,12 +34,15 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 **HTTP 500 “Internal server error” from the API:** Usually an unhandled exception (often **Prisma / database**). On Render → **Logs** for the service and reproduce the request; stack traces appear there. Common fixes: **`DATABASE_URL`** must match the Supabase project Render uses (add **`?sslmode=require`** if SSL errors appear in logs). After deploying this repo’s latest backend, generic 500 responses may include a **`hint`**; set **`EXPOSE_SERVER_ERRORS=true`** on Render only while debugging to add a **`detail`** field to JSON errors, then remove it.
 
+**Render logs: `FATAL: Tenant or user not found` (Prisma cannot connect):** Almost always a bad **`DATABASE_URL`** for Supabase, not application code. Do this: (1) Supabase dashboard → **Project Settings → Database** — confirm the project is **not paused**. (2) Copy the **URI** under **Connection string** for the **direct** Postgres host **`db.<project-ref>.supabase.co`** on port **`5432`** (user **`postgres`**, password = database password you set). Paste into Render as **`DATABASE_URL`** and append **`?sslmode=require`** if it is not already in the string. (3) If you intentionally use the **pooler** host (port **6543**), Supabase often requires the username format **`postgres.<project-ref>`** (not just `postgres`); wrong pooler credentials produce this exact error. (4) URL-encode special characters in the password (`@` → `%40`, etc.). Redeploy after saving env.
+
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Database**  
-   - Settings → Database → copy the **URI** (port `5432`). Use it as `DATABASE_URL` for Prisma.  
-   - Optional: use the **connection pooler** (port `6543`) for the API in production if you add `?pgbouncer=true` and follow Prisma’s pooled connection notes.
+   - Settings → Database → copy the **URI** (host **`db.<project-ref>.supabase.co`**, port **`5432`**, user **`postgres`**). Use it as **`DATABASE_URL`** on Render. Append **`?sslmode=require`** if not already present.  
+   - Avoid the **pooler** URL on port **6543** unless you follow Supabase’s username rules (`postgres.<project-ref>` for transaction pooler); a mismatched pooler string often yields **`FATAL: Tenant or user not found`**.  
+   - Optional: use the pooler later with Prisma’s `directUrl` / `?pgbouncer=true` notes when you need it.
 3. **SQL schema**  
    - Preferred: from the repo root, with `DATABASE_URL` set in `backend/.env`, run:
      - `npm install` (or `npm ci` on Linux CI)
