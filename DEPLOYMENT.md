@@ -30,6 +30,8 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 **Order that usually works:** Supabase ready → Render env set and service healthy (`GET /health` or `/api/health`) → GitHub secrets set → workflow green → open Pages URL and test register/login.
 
+**Register page / “Event not configured”:** The public `GET /api/event` endpoint reads a single **`EventSettings`** row (`singletonKey: 1`). If you ran **`db:push`** but never **seed**, that row is missing and the API returns **503** with message **`Event not configured`**. Fix: from your machine with `DATABASE_URL` pointing at the same Supabase DB as Render, run **`npm run db:seed -w backend`**, or insert/update **`EventSettings`** in Supabase SQL / Table Editor. If the red text mentions CORS or “could not reach the API”, fix **`VITE_API_ROOT`** on GitHub Actions and **`CORS_ORIGIN`** on Render to match your live site origin.
+
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).

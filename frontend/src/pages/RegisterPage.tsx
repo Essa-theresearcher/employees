@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiGet, apiPostMultipart, ApiError } from '../lib/api';
+import { ApiError, apiGet, apiPostMultipart } from '../lib/api';
 import { CONTRIBUTION_OPTIONS } from '../lib/labels';
 
 type EventDto = {
@@ -15,6 +15,7 @@ type EventDto = {
 export function RegisterPage() {
   const navigate = useNavigate();
   const [event, setEvent] = useState<EventDto | null>(null);
+  const [eventLoadError, setEventLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +34,25 @@ export function RegisterPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await apiGet<{ success: boolean; data: EventDto }>('/event');
-        setEvent(res.data);
-      } catch {
-        setError('Unable to load event details. Please try again shortly.');
+        const res = await apiGet<{ success?: boolean; data?: EventDto; message?: string }>('/event');
+        if (res && typeof res === 'object' && res.data) {
+          setEvent(res.data);
+          setEventLoadError(null);
+        } else {
+          const msg =
+            typeof res?.message === 'string' && res.message.trim()
+              ? res.message.trim()
+              : 'Event is not configured on the server yet.';
+          setEvent(null);
+          setEventLoadError(msg);
+        }
+      } catch (e) {
+        setEvent(null);
+        const msg =
+          e instanceof ApiError
+            ? e.message
+            : 'Could not reach the API. Check VITE_API_ROOT, redeploy the site, and ensure the backend allows this origin in CORS_ORIGIN.';
+        setEventLoadError(msg);
       } finally {
         setLoading(false);
       }
@@ -157,7 +173,12 @@ export function RegisterPage() {
                   </div>
                 </dl>
               )}
-              {!loading && !event && <p className="mt-2 text-sm text-red-600">Event settings unavailable.</p>}
+              {!loading && !event && eventLoadError && (
+                <p className="mt-2 text-sm text-red-600">{eventLoadError}</p>
+              )}
+              {!loading && !event && !eventLoadError && (
+                <p className="mt-2 text-sm text-red-600">Event settings unavailable.</p>
+              )}
             </div>
 
             <form className="space-y-5" onSubmit={onSubmit}>
