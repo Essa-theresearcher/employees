@@ -40,7 +40,11 @@ app.use(
       if (!origin) return cb(null, true);
       return cb(null, originIsAllowed(origin));
     },
-    credentials: true
+    // No cookie-based cross-site auth; false avoids stricter browser rules with Allow-Credentials.
+    credentials: false,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86_400
   })
 );
 
