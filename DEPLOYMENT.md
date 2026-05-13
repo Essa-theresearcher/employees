@@ -30,7 +30,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 **Order that usually works:** Supabase ready → Render env set and service healthy (`GET /health` or `/api/health`) → GitHub secrets set → workflow green → open Pages URL and test register/login.
 
-**Register page / “Event not configured”:** The public `GET /api/event` endpoint reads a single **`EventSettings`** row (`singletonKey: 1`). If you ran **`db:push`** but never **seed**, that row is missing and the API returns **503** with message **`Event not configured`**. Fix: from your machine with `DATABASE_URL` pointing at the same Supabase DB as Render, run **`npm run db:seed -w backend`**, or insert/update **`EventSettings`** in Supabase SQL / Table Editor. If the red text mentions CORS or “could not reach the API”, fix **`VITE_API_ROOT`** on GitHub Actions and **`CORS_ORIGIN`** on Render to match your live site origin.
+**Register page / “Event not configured”:** The public `GET /api/event` endpoint reads a single **`EventSettings`** row (`singletonKey: 1`). If you ran **`db:push`** but never **seed**, that row is missing and the API returns **503** with message **`Event not configured`**. **Fastest fix without Node:** Supabase → **SQL Editor** → run **`supabase/ensure-event-settings.sql`** in this repo (idempotent). **Or** from your machine with `DATABASE_URL` pointing at the same Supabase DB as Render: **`npm run db:seed -w backend`**. If the red text mentions CORS or “could not reach the API”, fix **`VITE_API_ROOT`** on GitHub Actions and **`CORS_ORIGIN`** on Render to match your live site origin.
 
 **HTTP 500 “Internal server error” from the API:** Usually an unhandled exception (often **Prisma / database**). On Render → **Logs** for the service and reproduce the request; stack traces appear there. Common fixes: **`DATABASE_URL`** must match the Supabase project Render uses (add **`?sslmode=require`** if SSL errors appear in logs). After deploying this repo’s latest backend, generic 500 responses may include a **`hint`**; set **`EXPOSE_SERVER_ERRORS=true`** on Render only while debugging to add a **`detail`** field to JSON errors, then remove it.
 
@@ -161,6 +161,7 @@ Redeploy after changing any `VITE_*` variable.
 | `.env.example` | Variable list for backend + frontend |
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
+| `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) |
 | `supabase/schema.sql` | Postgres DDL aligned with Prisma |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
