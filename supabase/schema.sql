@@ -1,20 +1,34 @@
 -- Coffee & Code — PostgreSQL schema (matches Prisma). Registration uses contributionFocus (enum ContributionFocus).
 -- Apply via `npm run db:push -w backend` or Supabase SQL Editor on a fresh DB.
+-- Enums are created idempotently; tables/indexes are not — if the schema already exists, use ensure-event-settings.sql or seed only.
 
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
--- CreateEnum
-CREATE TYPE "ContributionFocus" AS ENUM ('FRONTEND_DEVELOPMENT', 'BACKEND_DEVELOPMENT', 'UI_UX_DESIGN', 'DATA_RESEARCH', 'PRESENTATION_PITCHING', 'BUSINESS_STRATEGY', 'CONTENT_SOCIAL_MEDIA', 'PROJECT_MANAGEMENT', 'BEGINNER_LEARNING', 'OPEN_TO_ANY_ROLE');
+-- CreateEnum (idempotent: no-op if type already exists — e.g. after Prisma db:push)
+DO $$ BEGIN
+  CREATE TYPE "ContributionFocus" AS ENUM ('FRONTEND_DEVELOPMENT', 'BACKEND_DEVELOPMENT', 'UI_UX_DESIGN', 'DATA_RESEARCH', 'PRESENTATION_PITCHING', 'BUSINESS_STRATEGY', 'CONTENT_SOCIAL_MEDIA', 'PROJECT_MANAGEMENT', 'BEGINNER_LEARNING', 'OPEN_TO_ANY_ROLE');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "SkillLevel" AS ENUM ('BEGINNER', 'INTERMEDIATE', 'ADVANCED');
+DO $$ BEGIN
+  CREATE TYPE "SkillLevel" AS ENUM ('BEGINNER', 'INTERMEDIATE', 'ADVANCED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('MPESA', 'CASH', 'BANK');
+DO $$ BEGIN
+  CREATE TYPE "PaymentMethod" AS ENUM ('MPESA', 'CASH', 'BANK');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "RegistrationStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
+DO $$ BEGIN
+  CREATE TYPE "RegistrationStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
 CREATE TABLE "BadgeSequence" (

@@ -161,9 +161,9 @@ Redeploy after changing any `VITE_*` variable.
 | `.env.example` | Variable list for backend + frontend |
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
-| `supabase/full-setup.sql` | **One file:** `schema.sql` + default `EventSettings` / `BadgeSequence` — paste on a **new** empty Supabase DB only |
-| `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) |
-| `supabase/schema.sql` | Postgres DDL aligned with Prisma |
+| `supabase/full-setup.sql` | Full DDL + default `EventSettings` / `BadgeSequence`. Enums skip if present (**42710**); if tables already exist, stop — use **`ensure-event-settings.sql`** or **`npm run db:seed -w backend`** instead |
+| `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) — safe when schema is already applied |
+| `supabase/schema.sql` | Postgres DDL aligned with Prisma (enums idempotent; re-running full script still errors on existing tables) |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
 ## 7. Free tier notes
