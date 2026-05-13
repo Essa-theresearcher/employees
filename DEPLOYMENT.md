@@ -2,6 +2,34 @@
 
 This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API (`backend/`), and Prisma for PostgreSQL. The static frontend is built for **[GitHub Pages](https://pages.github.com/)** via `.github/workflows/deploy-github-pages.yml` (recommended here), or optionally **Vercel**. **Supabase** provides managed Postgres, optional **Supabase Auth** for organizers, and **Storage** for payment screenshots. The **Express API** must run on a long-lived host (Render, Railway, Fly.io, a VPS, etc.).
 
+## What is already in the repo vs what you do
+
+**Already in the repo (nothing for you to invent):** SPA routing support for GitHub Pages (`404.html` copy in the workflow), `frontend/vite.config.ts` base path from `VITE_BASE_PATH`, API client `VITE_API_ROOT` handling in `frontend/src/lib/api.ts`, Render-ready `PORT` usage, CORS from `CORS_ORIGIN`, and SQL under `supabase/`.
+
+**You — Supabase (dashboard):**
+
+1. Create the project; copy **Database → URI** → you will paste it as **`DATABASE_URL`** on Render.  
+2. Run **`supabase/schema.sql`** (SQL Editor) or use **`npm run db:push -w backend`** from your machine once `DATABASE_URL` points at this DB.  
+3. Run **`supabase/storage.sql`** if you want registration screenshots in Storage.  
+4. Copy **Project URL**, **anon** key, **service_role** key from **Settings → API**.  
+5. Optional: **Authentication** → create a user whose email matches your seeded **`Admin`** row if you use Supabase sign-in for admin.
+
+**You — Render (dashboard, your API service):**
+
+1. Set **`DATABASE_URL`**, **`JWT_SECRET`**, **`CORS_ORIGIN`**, **`PUBLIC_APP_URL`**.  
+2. Set **`SUPABASE_URL`** and **`SUPABASE_SERVICE_ROLE_KEY`** if you use Storage and/or Supabase Auth on admin routes.  
+3. **`CORS_ORIGIN`** must list the **exact** browser origin of your live frontend (e.g. `https://YOUR_USER.github.io/YOUR_REPO` for GitHub project Pages), comma-separated with **no spaces**. **`PUBLIC_APP_URL`** should be that same frontend URL people open in the browser.  
+4. **`CORS_ORIGIN`** should also include `http://localhost:5173` if you develop locally against production API (optional).
+
+**You — GitHub (dashboard, frontend only):**
+
+1. **Settings → Pages →** source **GitHub Actions** (one-time).  
+2. **Settings → Secrets and variables → Actions:** set at least **`VITE_API_ROOT`** to your Render API (e.g. `https://your-service.onrender.com` — the app adds `/api` if missing). Add **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`** if you use Supabase admin login in the browser.  
+3. Optional **Variables**: **`VITE_BASE_PATH`** if not using the default `/repo-name/` for project Pages (see section 3 below).  
+4. Push to **`main`/`master`** or **Actions → Run workflow** to rebuild after any secret change.
+
+**Order that usually works:** Supabase ready → Render env set and service healthy (`GET /health` or `/api/health`) → GitHub secrets set → workflow green → open Pages URL and test register/login.
+
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
@@ -10,7 +38,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
    - Optional: use the **connection pooler** (port `6543`) for the API in production if you add `?pgbouncer=true` and follow Prisma’s pooled connection notes.
 3. **SQL schema**  
    - Preferred: from the repo root, with `DATABASE_URL` set in `backend/.env`, run:
-     - `npm ci`
+     - `npm install` (or `npm ci` on Linux CI)
      - `npm run db:push -w backend`
      - `npm run db:seed -w backend`  
    - Alternative: paste `supabase/schema.sql` into the Supabase SQL Editor and run it on an empty database (then still run the seed with Prisma, or insert `Admin` / `EventSettings` manually).
@@ -27,7 +55,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 ## 2. API hosting (Express)
 
-1. Build command: `npm ci && npm run build -w backend`  
+1. Build command (example): `npm install && npm run build -w backend` (use `npm ci` on Linux if you prefer a clean lockfile install).  
 2. Start command: `npm run start -w backend` (runs `node dist/server.js`).  
 3. Set environment variables (see root `.env.example`): at minimum `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `PUBLIC_APP_URL`, and for cloud uploads `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.  
 4. Expose the app at a stable HTTPS URL. If the app is mounted at the root, routes are `/api/...` and `/health` as in `backend/src/app.ts`.  
