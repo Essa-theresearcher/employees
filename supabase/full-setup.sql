@@ -332,3 +332,19 @@ ON CONFLICT ("singletonKey") DO UPDATE SET
 INSERT INTO "BadgeSequence" ("id", "nextNum")
 VALUES (1, 0)
 ON CONFLICT ("id") DO NOTHING;
+
+-- =============================================================================
+-- Default admin (legacy POST /admin/login — when frontend has no Supabase Auth)
+-- Email / password match backend/prisma/seed.ts. Change password after first login.
+-- =============================================================================
+INSERT INTO "Admin" ("id", "email", "passwordHash", "createdAt", "updatedAt")
+VALUES (
+  gen_random_uuid()::text,
+  'admin@coffeeandcode.com',
+  '$2a$12$MzyMjVpS2w3tVHDhwiG5iOKRf/YUFkYUlpM.YXtIOmgxWWiUmNIGS',
+  NOW(),
+  NOW()
+)
+ON CONFLICT ("email") DO UPDATE SET
+  "passwordHash" = EXCLUDED."passwordHash",
+  "updatedAt" = NOW();

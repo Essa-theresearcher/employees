@@ -162,6 +162,8 @@ Use when you want a **clean slate** for the app tables (all registrations, admin
 3. In the same editor (or a new query), run **`supabase/full-setup.sql`** end-to-end.
 4. If you use payment screenshots from Storage, run **`supabase/storage.sql`** (safe to re-run).
 
+**Admin login (legacy API):** the backend checks the **`Admin`** table. If you only ran SQL and never ran **`npm run db:seed -w backend`**, there was no admin row — use **`supabase/seed-admin.sql`** (or re-run **`full-setup.sql`**, which now includes the same insert). Default: **`admin@coffeeandcode.com`** / **`ChangeMe123!`**. If the frontend has **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_ANON_KEY`**, sign in with a **Supabase Auth** user you created under **Authentication → Users**, not this table.
+
 `auth` users, `storage.objects` files, and buckets are **not** removed by step 2; only objects in **`public`** are. To clear uploaded files too, delete them from the Storage UI or adjust policies as needed.
 
 ## 7. Files reference
@@ -173,9 +175,10 @@ Use when you want a **clean slate** for the app tables (all registrations, admin
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
 | `supabase/reset-public-schema.sql` | **`DROP SCHEMA public CASCADE`** + recreate + grants — run **before** `full-setup.sql` for a full reset |
-| `supabase/full-setup.sql` | Full DDL (idempotent) + default `EventSettings` / `BadgeSequence`. For a clean `public`, run **`reset-public-schema.sql`** first |
+| `supabase/full-setup.sql` | Full DDL (idempotent) + defaults: `EventSettings`, `BadgeSequence`, **`Admin`** (legacy login). For a clean `public`, run **`reset-public-schema.sql`** first |
 | `supabase/ensure-event-settings.sql` | One-shot SQL if **`Event not configured`** (missing `EventSettings` / `BadgeSequence`) — safe when schema is already applied |
 | `supabase/schema.sql` | Same DDL as embedded in `full-setup.sql` (idempotent; `IF NOT EXISTS` does not alter already-existing tables) |
+| `supabase/seed-admin.sql` | Inserts/updates default **`Admin`** row for **`POST /admin/login`** (`admin@coffeeandcode.com` / `ChangeMe123!`) — also embedded at end of **`full-setup.sql`** |
 | `supabase/storage.sql` | **`storage`** bucket `registration-uploads` + public read policy — **re-run safe**; run after Storage is enabled (not affected by `reset-public-schema.sql`) |
 
 ## 8. Free tier notes
