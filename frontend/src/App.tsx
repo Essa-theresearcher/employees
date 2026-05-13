@@ -73,7 +73,7 @@ export default function App() {
           <Route path="/levels" element={<LevelsPage />} />
         </Route>
 
-        {/* Live event modules (redirect to /levels when locked; admins bypass) */}
+        {/* Live event modules (unlock after attendee check-in on this device; admins bypass) */}
         <Route element={<PublicEventModuleGate />}>
           <Route element={<PublicLayout />}>
             <Route path="/teams" element={<TeamsPage />} />
@@ -83,17 +83,18 @@ export default function App() {
             <Route path="/certificates" element={<CertificatesPlaceholder />} />
           </Route>
 
-          <Route element={<JudgeLayout />}>
-            <Route path="/judge" element={<JudgePage />} />
-            <Route path="/judge/login" element={<Navigate to="/judge" replace />} />
-          </Route>
-
           <Route element={<DisplayLayout />}>
             <Route path="/display/leaderboard" element={<LeaderboardDisplayPage />} />
             <Route path="/display/teams" element={<TeamsDisplayPage />} />
             <Route path="/display/qa" element={<QADisplayPage />} />
             <Route path="/display/polls" element={<PollsDisplayPage />} />
           </Route>
+        </Route>
+
+        {/* Judges use this URL without attendee check-in session */}
+        <Route element={<JudgeLayout />}>
+          <Route path="/judge" element={<JudgePage />} />
+          <Route path="/judge/login" element={<Navigate to="/judge" replace />} />
         </Route>
 
         {/* Old projector URLs → redirect to /display/* */}

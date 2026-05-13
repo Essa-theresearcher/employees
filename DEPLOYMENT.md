@@ -4,7 +4,7 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 
 ## What is already in the repo vs what you do
 
-**Already in the repo (nothing for you to invent):** SPA routing support for GitHub Pages (`404.html` copy in the workflow), `frontend/vite.config.ts` base path from `VITE_BASE_PATH`, API client `VITE_API_ROOT` handling in `frontend/src/lib/api.ts`, Render-ready `PORT` usage, CORS from `CORS_ORIGIN`, and SQL under `supabase/`.
+**Already in the repo (nothing for you to invent):** SPA routing support for GitHub Pages (`404.html` copy in the workflow), `frontend/vite.config.ts` base path from `VITE_BASE_PATH`, API client `VITE_API_ROOT` handling in `frontend/src/lib/api.ts`, Render-ready `PORT` usage, CORS from `CORS_ORIGIN`, SQL under `supabase/`, and **attendee check-in–gated event modules** (`frontend/src/lib/eventModules.ts` + status page sync).
 
 **You — Supabase (dashboard):**
 
@@ -86,13 +86,13 @@ The workflow **Deploy frontend to GitHub Pages** runs on pushes to **`main`** or
      |------|---------|
      | `VITE_BASE_PATH` | If unset, the workflow defaults to **`/REPO_NAME/`** for a **project site** (`https://user.github.io/repo/`). Set to **`/`** for a **user/org site** at the domain root or a custom domain at `/`. Must match how the site is served (see `frontend/vite.config.ts` `base`). |
      | `VITE_ASSET_ORIGIN` | Optional legacy asset origin |
-     | `VITE_PUBLIC_EVENT_MODULES_OPEN_AT` | Optional ISO date for public “levels” unlock |
      | `VITE_WHATSAPP_URL` | Optional contact link |
 
 4. Push to **`master`** or **`main`**, or run the workflow manually. After the first successful deploy, **Settings → Pages** shows the public URL.
 
 ### Behavior
 
+- **Attendee event modules** (teams, Q&amp;A, polls, leaderboard, certificates, display URLs) unlock **in the browser** only after the attendee is **checked in** and opens their **`/status/:registrationId`** page once on that device (`sessionStorage`). **Admins** with a session token bypass the gate; **`/judge`** is always reachable for judges.
 - Install uses **`npm install`** (not `npm ci`) on Ubuntu so macOS-generated lockfiles do not hit Rollup **`EBADPLATFORM`** on Linux.
 - Build: **`npm run build -w frontend`** from the monorepo root.
 - **`404.html`** is a copy of **`index.html`** so client-side routes work when users refresh a deep link (GitHub Pages serves `404.html` for unknown paths).
@@ -135,8 +135,7 @@ The root `vercel.json` uses **`npm run build -w frontend`**, which only works wh
 | `VITE_SUPABASE_URL` | `https://xxx.supabase.co` (if using Supabase Auth) |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
 | `VITE_ASSET_ORIGIN` | Same origin as API if you still serve legacy `/uploads` from disk (optional) |
-| `VITE_PUBLIC_EVENT_MODULES_OPEN_AT` | Optional ISO date for locked “levels” UX |
-| `VITE_BASE_PATH` | Only if deploying under a subpath |
+| `VITE_WHATSAPP_URL` | Optional |
 
 Redeploy after changing any `VITE_*` variable.
 

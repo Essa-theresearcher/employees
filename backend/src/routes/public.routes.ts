@@ -97,6 +97,7 @@ publicRouter.get(
         contributionFocus: registration.contributionFocus,
         status: registration.status,
         adminNote: registration.adminNote,
+        checkedIn: registration.checkedIn,
         badge: registration.badge
           ? {
               badgeId: registration.badge.badgeId,

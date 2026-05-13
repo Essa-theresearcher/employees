@@ -5,7 +5,7 @@ const NAV = [
   { to: '/', label: 'Home' },
   { to: '/register', label: 'Register' },
   { to: '/contact', label: 'Contact' },
-  { to: '/levels', label: 'Locked Levels' }
+  { to: '/levels', label: 'Event levels' }
 ] as const;
 
 const WHATSAPP_URL =

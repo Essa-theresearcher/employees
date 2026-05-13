@@ -3,6 +3,8 @@ import { getAdminToken } from '../lib/auth';
 import { isPublicEventModulesUnlocked } from '../lib/eventModules';
 import { pathToLevelsHighlight } from '../lib/levelsRouting';
 
+/** Non-admin users need a check-in session (see `syncCheckedInEventAccessFromStatus`). */
+
 export function PublicEventModuleGate() {
   const adminToken = getAdminToken();
   const { pathname } = useLocation();

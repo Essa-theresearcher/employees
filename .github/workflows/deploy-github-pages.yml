@@ -43,7 +43,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_ASSET_ORIGIN: ${{ vars.VITE_ASSET_ORIGIN }}
-          VITE_PUBLIC_EVENT_MODULES_OPEN_AT: ${{ vars.VITE_PUBLIC_EVENT_MODULES_OPEN_AT }}
           VITE_WHATSAPP_URL: ${{ vars.VITE_WHATSAPP_URL }}
         run: npm run build -w frontend
 

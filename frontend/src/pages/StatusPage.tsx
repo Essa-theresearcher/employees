@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { BadgePreview } from '../components/BadgePreview';
 import { apiGet, ApiError } from '../lib/api';
+import { syncCheckedInEventAccessFromStatus } from '../lib/eventModules';
 import { downloadBadgePdf, downloadBadgePng } from '../lib/badgeExport';
 import { CONTRIBUTION_LABELS } from '../lib/labels';
 
@@ -11,6 +12,7 @@ type StatusPayload = {
   contributionFocus: string;
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
   adminNote: string | null;
+  checkedIn: boolean;
   badge: { badgeId: string; qrTargetUrl: string } | null;
 };
 
@@ -35,6 +37,7 @@ export function StatusPage() {
           `/registrations/${encodeURIComponent(id)}/status`
         );
         setData(res.data);
+        syncCheckedInEventAccessFromStatus(res.data.id, Boolean(res.data.checkedIn));
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           setError('We could not find this registration. Please check your link.');
@@ -141,6 +144,19 @@ export function StatusPage() {
                     {data.adminNote?.trim()
                       ? data.adminNote
                       : 'We could not verify your payment. Please contact the organizers for assistance.'}
+                  </p>
+                </div>
+              )}
+
+              {data.checkedIn && (
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-5">
+                  <p className="text-sm font-semibold text-sky-900">You’re checked in</p>
+                  <p className="mt-2 text-sm text-sky-900/90">
+                    Event levels (teams, Q&amp;A, polls, leaderboard) are unlocked on this device. Open the{' '}
+                    <Link to="/levels" className="font-semibold underline hover:text-sky-950">
+                      progress map
+                    </Link>{' '}
+                    or go straight to Teams from the site menu.
                   </p>
                 </div>
               )}
