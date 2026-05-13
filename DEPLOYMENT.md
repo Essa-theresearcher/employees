@@ -1,6 +1,6 @@
-# Deploying Coffee & Code (Vercel + Supabase + API)
+# Deploying Coffee & Code (GitHub Pages / Vercel + Supabase + API)
 
-This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API (`backend/`), and Prisma for PostgreSQL. **Vercel** hosts the static frontend. **Supabase** provides managed Postgres, optional **Supabase Auth** for organizers, and **Storage** for payment screenshots. The **Express API** must run on a long-lived host (Render, Railway, Fly.io, a VPS, etc.) because it is not converted to Vercel serverless functions in this repository.
+This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API (`backend/`), and Prisma for PostgreSQL. The static frontend is built for **[GitHub Pages](https://pages.github.com/)** via `.github/workflows/deploy-github-pages.yml` (recommended here), or optionally **Vercel**. **Supabase** provides managed Postgres, optional **Supabase Auth** for organizers, and **Storage** for payment screenshots. The **Express API** must run on a long-lived host (Render, Railway, Fly.io, a VPS, etc.).
 
 ## 1. Supabase project
 
@@ -31,9 +31,43 @@ This app is a **monorepo**: a Vite React frontend (`frontend/`), an Express API 
 2. Start command: `npm run start -w backend` (runs `node dist/server.js`).  
 3. Set environment variables (see root `.env.example`): at minimum `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `PUBLIC_APP_URL`, and for cloud uploads `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.  
 4. Expose the app at a stable HTTPS URL. If the app is mounted at the root, routes are `/api/...` and `/health` as in `backend/src/app.ts`.  
-5. `CORS_ORIGIN` must include your **Vercel** frontend origin (comma-separated list, no spaces).
+5. `CORS_ORIGIN` must include your **GitHub Pages** (or Vercel) frontend origin, for example `https://YOUR_USER.github.io` or `https://YOUR_USER.github.io/REPO_NAME` depending on how you host Pages (comma-separated list, no spaces).
 
-## 3. Vercel (frontend)
+## 3. GitHub Pages (frontend)
+
+The workflow **Deploy frontend to GitHub Pages** runs on pushes to **`main`** or **`master`** and on **manual** “Run workflow”.
+
+### One-time GitHub setup
+
+1. Repository → **Settings** → **Pages** → **Build and deployment** → Source: **GitHub Actions** (not “Deploy from a branch” using `gh-pages` unless you change the workflow).
+2. **Actions** tab: confirm the workflow is allowed to run (Settings → Actions → General, if your org restricts workflows).
+3. **Secrets and variables** → **Actions**:
+   - **Secrets** (recommended for keys and URLs that embed credentials):
+
+     | Name | Purpose |
+     |------|---------|
+     | `VITE_API_ROOT` | Full API base, e.g. `https://your-api.onrender.com/api` |
+     | `VITE_SUPABASE_URL` | Optional; Supabase project URL |
+     | `VITE_SUPABASE_ANON_KEY` | Optional; Supabase anon key |
+
+   - **Variables** (non-sensitive; optional):
+
+     | Name | Purpose |
+     |------|---------|
+     | `VITE_BASE_PATH` | If unset, the workflow defaults to **`/REPO_NAME/`** for a **project site** (`https://user.github.io/repo/`). Set to **`/`** for a **user/org site** at the domain root or a custom domain at `/`. Must match how the site is served (see `frontend/vite.config.ts` `base`). |
+     | `VITE_ASSET_ORIGIN` | Optional legacy asset origin |
+     | `VITE_PUBLIC_EVENT_MODULES_OPEN_AT` | Optional ISO date for public “levels” unlock |
+     | `VITE_WHATSAPP_URL` | Optional contact link |
+
+4. Push to **`master`** or **`main`**, or run the workflow manually. After the first successful deploy, **Settings → Pages** shows the public URL.
+
+### Behavior
+
+- Install uses **`npm install`** (not `npm ci`) on Ubuntu so macOS-generated lockfiles do not hit Rollup **`EBADPLATFORM`** on Linux.
+- Build: **`npm run build -w frontend`** from the monorepo root.
+- **`404.html`** is a copy of **`index.html`** so client-side routes work when users refresh a deep link (GitHub Pages serves `404.html` for unknown paths).
+
+## 4. Vercel (frontend, optional)
 
 ### Vercel project settings
 
@@ -76,25 +110,27 @@ The root `vercel.json` uses **`npm run build -w frontend`**, which only works wh
 
 Redeploy after changing any `VITE_*` variable.
 
-## 4. End-to-end checks
+## 5. End-to-end checks
 
 - `GET https://your-api/health` → `{ "ok": true }`  
-- Open the Vercel site: home, register, contact, levels.  
+- Open the GitHub Pages (or Vercel) site: home, register, contact, levels.  
 - Submit a test registration with an image → row appears in admin, screenshot loads (Supabase public URL or proxied `/uploads` in dev).  
 - Admin login (Supabase or legacy) → payments / registrations / teams / judging / Q&A / polls / certificates behave as before.
 
-## 5. Files reference
+## 6. Files reference
 
 | File | Purpose |
 |------|---------|
+| `.github/workflows/deploy-github-pages.yml` | CI: build frontend and deploy to GitHub Pages |
 | `.env.example` | Variable list for backend + frontend |
 | `vercel.json` | Vercel build/output + SPA rewrites (when **Root Directory** is the repo root) |
 | `frontend/vercel.json` | Same for Vercel when **Root Directory** is `frontend` (standalone install/build, output `dist`) |
 | `supabase/schema.sql` | Postgres DDL aligned with Prisma |
 | `supabase/storage.sql` | Storage bucket + read policy |
 
-## 6. Free tier notes
+## 7. Free tier notes
 
-- **Vercel** Hobby: generous static hosting; watch bandwidth and build minutes.  
+- **GitHub Pages**: public static hosting; [usage limits](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages) apply.  
+- **Vercel** Hobby (if used): generous static hosting; watch bandwidth and build minutes.  
 - **Supabase** Free: database, auth, and storage limits apply; upgrade if you hit caps.  
 - **API host**: pick a free tier that supports a always-on Node process (Render/Railway/etc.).

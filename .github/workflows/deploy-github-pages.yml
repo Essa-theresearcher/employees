@@ -1,12 +1,13 @@
 # Deploy the Vite frontend to GitHub Pages.
-# GitHub cannot run Express or PostgreSQL — host the API + DB separately (e.g. Render + Neon),
-# then set repository secrets/variables below.
+# GitHub cannot run Express or PostgreSQL — host the API + DB separately (e.g. Render + Supabase),
+# then set repository secrets/variables (see DEPLOYMENT.md → GitHub Pages).
 
 name: Deploy frontend to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,15 +30,21 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      # npm install (not npm ci): lockfiles generated on macOS can make npm ci fail on Linux
+      # with EBADPLATFORM for Rollup darwin optional binaries.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build frontend
         env:
-          # Full URL to your live API, e.g. https://your-api.onrender.com/api
           VITE_API_ROOT: ${{ secrets.VITE_API_ROOT }}
-          # Default: /repository-name/ for GitHub project Pages. Override with repo variable VITE_BASE_PATH (e.g. /).
+          # Project Pages default: /repo-name/. User/org site at apex: set repo variable VITE_BASE_PATH to /
           VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ASSET_ORIGIN: ${{ vars.VITE_ASSET_ORIGIN }}
+          VITE_PUBLIC_EVENT_MODULES_OPEN_AT: ${{ vars.VITE_PUBLIC_EVENT_MODULES_OPEN_AT }}
+          VITE_WHATSAPP_URL: ${{ vars.VITE_WHATSAPP_URL }}
         run: npm run build -w frontend
 
       # GitHub Pages serves 404.html for unknown paths so React Router deep links work on refresh.
