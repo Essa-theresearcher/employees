@@ -10,7 +10,7 @@ const NAV = [
 
 const WHATSAPP_URL =
   (import.meta.env.VITE_WHATSAPP_URL as string | undefined) ||
-  'https://wa.me/254700000000';
+  'https://wa.me/254723995078';
 
 function linkClass(isActive: boolean): string {
   return [

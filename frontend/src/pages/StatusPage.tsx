@@ -202,6 +202,10 @@ export function StatusPage() {
                       contributionLabel={CONTRIBUTION_LABELS[data.contributionFocus] ?? data.contributionFocus}
                       qrValue={data.badge.qrTargetUrl}
                     />
+                    <p className="mt-4 max-w-xl text-xs text-slate-600">
+                      This QR opens your personal status page (same link you bookmarked). Anyone can still confirm a badge
+                      publicly using <span className="font-mono">/verify/{data.badge.badgeId}</span> if you share the ID.
+                    </p>
                   </div>
                 </div>
               )}

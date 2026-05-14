@@ -137,7 +137,10 @@ export function RegisterPage() {
             </div>
             <div className="rounded-2xl border border-coffee-100 bg-white p-5 shadow-soft">
               <p className="text-sm font-semibold text-brand-900">Badge you can trust</p>
-              <p className="mt-2 text-sm text-slate-600">Every badge includes a QR code linking to a public verification page.</p>
+              <p className="mt-2 text-sm text-slate-600">
+                Every badge includes a QR code that opens your registration page — bookmark it for downloads and, after
+                check-in, to unlock live event modules on that device.
+              </p>
             </div>
           </div>
         </div>

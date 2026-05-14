@@ -144,7 +144,7 @@ export async function approveRegistration(registrationId: string, adminId: strin
     if (reg.status !== 'PENDING') throw new AppError('Only pending registrations can be approved.', 400);
 
     const badgeId = await allocateNextBadgeId(tx);
-    const qrTargetUrl = `${env.publicAppUrl.replace(/\/+$/, '')}/checkin/${encodeURIComponent(badgeId)}`;
+    const qrTargetUrl = `${env.publicAppUrl.replace(/\/+$/, '')}/status/${encodeURIComponent(registrationId)}`;
 
     await tx.registration.update({
       where: { id: registrationId },

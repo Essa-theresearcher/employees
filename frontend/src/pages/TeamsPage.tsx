@@ -20,17 +20,10 @@ type Team = {
   members: TeamMember[];
 };
 
-type Banner = { kind: 'success' | 'error'; text: string } | null;
-
 export function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  const [teamName, setTeamName] = useState('');
-  const [description, setDescription] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [createBanner, setCreateBanner] = useState<Banner>(null);
 
   const [joinTarget, setJoinTarget] = useState<Team | null>(null);
 
@@ -53,82 +46,17 @@ export function TeamsPage() {
     return () => window.clearInterval(handle);
   }, [load]);
 
-  async function onCreate(e: FormEvent) {
-    e.preventDefault();
-    setCreating(true);
-    setCreateBanner(null);
-    try {
-      await apiPostJson<{ success: boolean; data: Team; message?: string }>(
-        '/teams',
-        { teamName: teamName.trim(), description: description.trim() || null }
-      );
-      setCreateBanner({ kind: 'success', text: 'Team created successfully' });
-      setTeamName('');
-      setDescription('');
-      await load(true);
-    } catch (err) {
-      if (err instanceof ApiError) setCreateBanner({ kind: 'error', text: err.message });
-      else setCreateBanner({ kind: 'error', text: 'Could not create team.' });
-    } finally {
-      setCreating(false);
-    }
-  }
-
   return (
     <div>
       <div className="mx-auto max-w-6xl space-y-2 px-4 pt-10">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Attendee Portal</p>
         <h1 className="text-2xl font-bold text-brand-900 sm:text-3xl">Team Formation Board</h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+          Teams are created by organizers. Find your team below and join with your badge ID or phone number — you must
+          already be checked in at the door.
+        </p>
       </div>
       <div className="mx-auto max-w-6xl space-y-8 px-4 pb-10 pt-6">
-        <section className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-soft backdrop-blur sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-900">Create a team</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Up to {MAX_TEAM_SIZE} checked-in attendees per team. Pick a unique name.
-          </p>
-          <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={onCreate}>
-            <label className="block text-sm font-medium text-slate-700 sm:col-span-1">
-              Team name
-              <input
-                required
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="e.g. Latte Liners"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500/30 focus:ring-4"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700 sm:col-span-1">
-              Description (optional)
-              <input
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="What are you building?"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500/30 focus:ring-4"
-              />
-            </label>
-            <div className="sm:col-span-2">
-              <button
-                type="submit"
-                disabled={creating}
-                className="rounded-2xl bg-brand-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 hover:bg-brand-700 disabled:opacity-60"
-              >
-                {creating ? 'Creating…' : 'Create team'}
-              </button>
-            </div>
-          </form>
-          {createBanner && (
-            <div
-              className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
-                createBanner.kind === 'success'
-                  ? 'border-emerald-100 bg-emerald-50 text-emerald-800'
-                  : 'border-red-100 bg-red-50 text-red-700'
-              }`}
-            >
-              {createBanner.text}
-            </div>
-          )}
-        </section>
-
         <section className="space-y-4">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-semibold text-brand-900">Teams</h2>
@@ -140,7 +68,7 @@ export function TeamsPage() {
           {loading && <p className="text-sm text-slate-600">Loading teams…</p>}
           {!loading && !teams.length && (
             <div className="rounded-3xl border border-dashed border-slate-200 bg-white/60 p-10 text-center text-sm text-slate-600">
-              No teams yet — be the first to create one.
+              No teams are listed yet. When organizers publish teams, they will appear here for you to join.
             </div>
           )}
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

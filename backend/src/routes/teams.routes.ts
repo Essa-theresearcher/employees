@@ -1,12 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import {
-  createTeam,
-  joinTeam,
-  leaveTeam,
-  listAvailableAttendees,
-  listTeams
-} from '../services/teamService.js';
+import { joinTeam, leaveTeam, listAvailableAttendees, listTeams } from '../services/teamService.js';
 
 export const teamsRouter = Router();
 
@@ -15,21 +9,6 @@ teamsRouter.get(
   asyncHandler(async (_req, res) => {
     const data = await listTeams();
     return res.json({ success: true, data });
-  })
-);
-
-teamsRouter.post(
-  '/teams',
-  asyncHandler(async (req, res) => {
-    const teamName = typeof req.body?.teamName === 'string' ? req.body.teamName : '';
-    const description =
-      typeof req.body?.description === 'string' ? req.body.description : null;
-    const data = await createTeam({ teamName, description });
-    return res.status(201).json({
-      success: true,
-      data,
-      message: 'Team created successfully'
-    });
   })
 );
 
