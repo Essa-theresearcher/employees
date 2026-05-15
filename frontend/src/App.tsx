@@ -20,6 +20,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { StatusPage } from './pages/StatusPage';
 import { TeamsDisplayPage } from './pages/TeamsDisplayPage';
 import { TeamsPage } from './pages/TeamsPage';
+import { ProjectorHubPage } from './pages/ProjectorHubPage';
 import { ThanksPage } from './pages/ThanksPage';
 import { VerifyPage } from './pages/VerifyPage';
 
@@ -73,6 +74,15 @@ export default function App() {
           <Route path="/levels" element={<LevelsPage />} />
         </Route>
 
+        {/* Venue projector: public read-only displays, no check-in gate — use a separate browser from admin */}
+        <Route element={<DisplayLayout />}>
+          <Route path="/projector" element={<ProjectorHubPage />} />
+          <Route path="/display/leaderboard" element={<LeaderboardDisplayPage />} />
+          <Route path="/display/teams" element={<TeamsDisplayPage />} />
+          <Route path="/display/qa" element={<QADisplayPage />} />
+          <Route path="/display/polls" element={<PollsDisplayPage />} />
+        </Route>
+
         {/* Live event modules (unlock after attendee check-in on this device; admins bypass) */}
         <Route element={<PublicEventModuleGate />}>
           <Route element={<PublicLayout />}>
@@ -81,13 +91,6 @@ export default function App() {
             <Route path="/qa" element={<QAPage />} />
             <Route path="/polls" element={<PollsPage />} />
             <Route path="/certificates" element={<CertificatesPlaceholder />} />
-          </Route>
-
-          <Route element={<DisplayLayout />}>
-            <Route path="/display/leaderboard" element={<LeaderboardDisplayPage />} />
-            <Route path="/display/teams" element={<TeamsDisplayPage />} />
-            <Route path="/display/qa" element={<QADisplayPage />} />
-            <Route path="/display/polls" element={<PollsDisplayPage />} />
           </Route>
         </Route>
 

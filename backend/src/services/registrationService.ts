@@ -4,6 +4,12 @@ import { AppError } from '../utils/AppError.js';
 import { allocateNextBadgeId } from './badgeSerial.js';
 import { env } from '../config/env.js';
 
+/** Badge QR always points here; recomputed on read from `PUBLIC_APP_URL` so localhost is not baked in forever. */
+export function buildBadgeQrTargetUrl(registrationId: string): string {
+  const base = env.publicAppUrl.replace(/\/+$/, '');
+  return `${base}/status/${encodeURIComponent(registrationId)}`;
+}
+
 const normalizeMpesaCode = (code: string | undefined | null): string | null => {
   const t = code?.trim();
   return t ? t.toUpperCase() : null;
@@ -118,7 +124,7 @@ export async function listRegistrations(filters: {
       : {})
   };
 
-  return prisma.registration.findMany({
+  const rows = await prisma.registration.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     include: {
@@ -126,6 +132,12 @@ export async function listRegistrations(filters: {
       badge: true
     }
   });
+
+  return rows.map((row) =>
+    row.badge
+      ? { ...row, badge: { ...row.badge, qrTargetUrl: buildBadgeQrTargetUrl(row.id) } }
+      : row
+  );
 }
 
 export async function getRegistration(id: string) {
@@ -134,7 +146,8 @@ export async function getRegistration(id: string) {
     include: { payment: true, badge: true }
   });
   if (!row) throw new AppError('Registration not found', 404);
-  return row;
+  if (!row.badge) return row;
+  return { ...row, badge: { ...row.badge, qrTargetUrl: buildBadgeQrTargetUrl(row.id) } };
 }
 
 export async function approveRegistration(registrationId: string, adminId: string, adminNote?: string | null) {
@@ -144,7 +157,7 @@ export async function approveRegistration(registrationId: string, adminId: strin
     if (reg.status !== 'PENDING') throw new AppError('Only pending registrations can be approved.', 400);
 
     const badgeId = await allocateNextBadgeId(tx);
-    const qrTargetUrl = `${env.publicAppUrl.replace(/\/+$/, '')}/status/${encodeURIComponent(registrationId)}`;
+    const qrTargetUrl = buildBadgeQrTargetUrl(registrationId);
 
     await tx.registration.update({
       where: { id: registrationId },

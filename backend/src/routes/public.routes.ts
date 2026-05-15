@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../prisma.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { registrationBodySchema } from '../schemas/registration.js';
-import { createRegistration, verifyBadgePublic } from '../services/registrationService.js';
+import { createRegistration, verifyBadgePublic, buildBadgeQrTargetUrl } from '../services/registrationService.js';
 import { uploadScreenshotMemory } from '../middleware/uploadMemory.js';
 import { persistRegistrationScreenshot } from '../services/storageService.js';
 
@@ -101,7 +101,7 @@ publicRouter.get(
         badge: registration.badge
           ? {
               badgeId: registration.badge.badgeId,
-              qrTargetUrl: registration.badge.qrTargetUrl
+              qrTargetUrl: buildBadgeQrTargetUrl(registration.id)
             }
           : null
       }

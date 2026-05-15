@@ -1,7 +1,10 @@
 /**
- * Public “event modules” (teams, Q&A, polls, leaderboard, certificates, display/*)
+ * Public “event modules” (teams, Q&A, polls, leaderboard, certificates)
  * unlock in the browser after the attendee has been **checked in** and opens their
  * registration status page once (`/status/:id` — see `syncCheckedInEventAccessFromStatus`).
+ *
+ * Venue projector pages (`/projector`, `/display/*`) are **not** gated — use a separate
+ * browser profile from admin so the hall screen never shows `/admin/*`.
  *
  * Admins with a stored token bypass the gate (`PublicEventModuleGate`).
  *

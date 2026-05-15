@@ -299,6 +299,26 @@ export function AdminDashboard() {
 
       {error && <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
+      <div className="rounded-3xl border border-sky-200 bg-gradient-to-r from-sky-50 to-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-sky-950">Venue projector</h2>
+            <p className="mt-1 max-w-2xl text-sm text-sky-900/85">
+              Open this link on the hall laptop in a clean browser window (or guest profile). It only shows public live
+              displays — no admin sidebar, payments, or attendee data.
+            </p>
+          </div>
+          <Link
+            to="/projector"
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 rounded-2xl bg-sky-900 px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-sky-800"
+          >
+            Open projector menu
+          </Link>
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <div key={c.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
