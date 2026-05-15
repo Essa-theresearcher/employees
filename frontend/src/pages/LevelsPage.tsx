@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { apiGet } from '../lib/api';
 import { getAdminToken } from '../lib/auth';
-import { isPublicEventModulesUnlocked } from '../lib/eventModules';
+import {
+  isPublicEventModulesUnlocked,
+  refreshEventAccessFromServer,
+  syncCheckedInEventAccessFromStatus
+} from '../lib/eventModules';
 
 type LevelKey = 'registration' | 'teams' | 'qa' | 'polls' | 'leaderboard' | 'certificates';
 
@@ -80,7 +85,37 @@ function LockGlyph({ className }: { className?: string }) {
 export function LevelsPage() {
   const [searchParams] = useSearchParams();
   const highlight = (searchParams.get('highlight') ?? '').toLowerCase();
-  const unlocked = Boolean(getAdminToken()) || isPublicEventModulesUnlocked();
+  const registrationId = searchParams.get('id')?.trim() ?? '';
+  const [unlocked, setUnlocked] = useState(
+    () => Boolean(getAdminToken()) || isPublicEventModulesUnlocked()
+  );
+
+  useEffect(() => {
+    if (getAdminToken() || isPublicEventModulesUnlocked()) {
+      setUnlocked(true);
+      return;
+    }
+    if (registrationId) {
+      void (async () => {
+        try {
+          const res = await apiGet<{ success: boolean; data: { checkedIn: boolean } }>(
+            `/registrations/${encodeURIComponent(registrationId)}/status`
+          );
+          syncCheckedInEventAccessFromStatus(registrationId, res.data.checkedIn);
+          setUnlocked(res.data.checkedIn);
+        } catch {
+          /* keep locked */
+        }
+      })();
+      return;
+    }
+    void refreshEventAccessFromServer(async (id) => {
+      const res = await apiGet<{ success: boolean; data: { checkedIn: boolean } }>(
+        `/registrations/${encodeURIComponent(id)}/status`
+      );
+      return Boolean(res.data.checkedIn);
+    }).then(setUnlocked);
+  }, [registrationId]);
   const cardRefs = useRef<Partial<Record<LevelKey, HTMLDivElement | null>>>({});
 
   const highlightKey = useMemo((): LevelKey | null => {

@@ -7,7 +7,10 @@ import { env } from '../config/env.js';
 /** Badge QR → /register?id=…; built from PUBLIC_APP_URL (+ optional PUBLIC_APP_BASE_PATH for GitHub Pages). */
 export function buildBadgeQrTargetUrl(registrationId: string): string {
   const origin = env.publicAppUrl.replace(/\/+$/, '');
-  const prefix = env.publicAppBasePath;
+  let prefix = env.publicAppBasePath;
+  if (prefix && origin.toLowerCase().endsWith(prefix.toLowerCase())) {
+    prefix = '';
+  }
   return `${origin}${prefix}/register?id=${encodeURIComponent(registrationId)}`;
 }
 

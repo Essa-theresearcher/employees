@@ -159,12 +159,20 @@ export function AttendeePortal({ registrationId }: Props) {
                   <p className="mt-2 text-sm text-sky-900/90">
                     Teams, Q&amp;A, polls, and the leaderboard are available on this device.
                   </p>
-                  <Link
-                    to="/levels"
-                    className="mt-4 inline-flex rounded-2xl bg-sky-900 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-800"
-                  >
-                    Open progress map
-                  </Link>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link
+                      to="/teams"
+                      className="inline-flex rounded-2xl bg-sky-900 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-800"
+                    >
+                      Join a team
+                    </Link>
+                    <Link
+                      to="/levels"
+                      className="inline-flex rounded-2xl border border-sky-200 bg-white px-5 py-3 text-sm font-semibold text-sky-900 hover:bg-sky-50"
+                    >
+                      All levels
+                    </Link>
+                  </div>
                 </div>
               )}
 

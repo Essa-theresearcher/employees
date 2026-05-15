@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { WelcomeSplashPage } from '../pages/WelcomeSplashPage';
 import { apiGet } from '../lib/api';
 import { getAdminToken } from '../lib/auth';
+import { isPublicEventModulesUnlocked } from '../lib/eventModules';
 
 type Phase = {
   portalOpen: boolean;
@@ -23,9 +24,10 @@ export function EventPortalGate() {
 
   const adminToken = getAdminToken();
   const exempt = isExemptPath(pathname, search);
+  const checkedInOnDevice = isPublicEventModulesUnlocked();
 
   useEffect(() => {
-    if (adminToken || exempt) {
+    if (adminToken || exempt || checkedInOnDevice) {
       setPortalOpen(true);
       return;
     }
@@ -52,9 +54,9 @@ export function EventPortalGate() {
       cancelled = true;
       window.clearInterval(handle);
     };
-  }, [adminToken, exempt, navigate, pathname]);
+  }, [adminToken, checkedInOnDevice, exempt, navigate, pathname]);
 
-  if (adminToken || exempt) {
+  if (adminToken || exempt || checkedInOnDevice) {
     return <Outlet />;
   }
 
