@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../prisma.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { registrationBodySchema } from '../schemas/registration.js';
+import { getEventPhase } from '../services/eventPhaseService.js';
 import { createRegistration, verifyBadgePublic, buildBadgeQrTargetUrl } from '../services/registrationService.js';
 import { uploadScreenshotMemory } from '../middleware/uploadMemory.js';
 import { persistRegistrationScreenshot } from '../services/storageService.js';
@@ -11,20 +12,8 @@ export const publicRouter = Router();
 publicRouter.get(
   '/event',
   asyncHandler(async (_req, res) => {
-    const event = await prisma.eventSettings.findUnique({ where: { singletonKey: 1 } });
-    if (!event) return res.status(503).json({ success: false, message: 'Event not configured' });
-
-    return res.json({
-      success: true,
-      data: {
-        eventName: event.eventName,
-        amountKes: Number(event.amountKes),
-        mpesaChannelLabel: event.mpesaChannelLabel,
-        mpesaTillOrPaybill: event.mpesaTillOrPaybill,
-        accountReferenceHint: event.accountReferenceHint,
-        scheduleNote: event.scheduleNote
-      }
-    });
+    const data = await getEventPhase();
+    return res.json({ success: true, data });
   })
 );
 

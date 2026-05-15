@@ -66,6 +66,10 @@ model EventSettings {
   accountReferenceHint String   @default("Use your full name")
   /// Short schedule note for attendees (e.g. arrival time).
   scheduleNote         String   @default("")
+  /// When true, door check-in is finished and the welcome screen can advance (with teams published).
+  checkInClosed        Boolean  @default(false)
+  /// Set when organizers publish teams (also auto-set when the first team is created).
+  teamsPublished       Boolean  @default(false)
   updatedAt            DateTime @updatedAt
 }
 

@@ -10,6 +10,10 @@ type EventDto = {
   mpesaTillOrPaybill: string;
   accountReferenceHint: string;
   scheduleNote: string;
+  checkInClosed: boolean;
+  teamsPublished: boolean;
+  teamCount: number;
+  portalOpen: boolean;
 };
 
 export function AdminSettingsPage() {
@@ -22,6 +26,11 @@ export function AdminSettingsPage() {
   const [mpesaTillOrPaybill, setMpesaTillOrPaybill] = useState('');
   const [accountReferenceHint, setAccountReferenceHint] = useState('');
   const [scheduleNote, setScheduleNote] = useState('');
+
+  const [checkInClosed, setCheckInClosed] = useState(false);
+  const [teamsPublished, setTeamsPublished] = useState(false);
+  const [teamCount, setTeamCount] = useState(0);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +47,10 @@ export function AdminSettingsPage() {
       setMpesaTillOrPaybill(e.mpesaTillOrPaybill);
       setAccountReferenceHint(e.accountReferenceHint);
       setScheduleNote(e.scheduleNote ?? '');
+      setCheckInClosed(Boolean(e.checkInClosed));
+      setTeamsPublished(Boolean(e.teamsPublished));
+      setTeamCount(Number(e.teamCount ?? 0));
+      setPortalOpen(Boolean(e.portalOpen));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearAdminToken();
@@ -75,6 +88,26 @@ export function AdminSettingsPage() {
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError('Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function setDoorCheckInClosed(closed: boolean) {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await apiPatchJson(
+        '/admin/event/check-in',
+        { closed },
+        token
+      );
+      setSuccess(closed ? 'Check-in closed. Portal will open once teams are ready.' : 'Check-in reopened.');
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError) setError(err.message);
+      else setError('Update failed.');
     } finally {
       setSaving(false);
     }
@@ -156,6 +189,48 @@ export function AdminSettingsPage() {
           </button>
         </div>
       </form>
+
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-brand-900">Attendee portal phase</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Portal opens only when door check-in is closed and at least one team exists.
+            </p>
+            <div className="mt-3 space-y-1 text-sm text-slate-700">
+              <p>
+                Check-in: <span className="font-semibold">{checkInClosed ? 'Closed' : 'Open'}</span>
+              </p>
+              <p>
+                Teams: <span className="font-semibold">{teamCount} team{teamCount === 1 ? '' : 's'}</span>
+              </p>
+              <p>
+                Portal: <span className="font-semibold">{portalOpen ? 'Open' : 'Locked (splash screen)'}</span>
+              </p>
+            </div>
+          </div>
+
+          {checkInClosed ? (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void setDoorCheckInClosed(false)}
+              className="shrink-0 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-60"
+            >
+              Re-open check-in
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void setDoorCheckInClosed(true)}
+              className="shrink-0 rounded-2xl bg-brand-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-60"
+            >
+              Close check-in &amp; start portal
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

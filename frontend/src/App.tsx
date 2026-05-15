@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { AdminAuthGate } from './components/AdminAuthGate';
+import { EventPortalGate } from './components/EventPortalGate';
 import { PublicEventModuleGate } from './components/PublicEventModuleGate';
 import { AdminLayout } from './layouts/AdminLayout';
 import { DisplayLayout } from './layouts/DisplayLayout';
@@ -60,18 +61,31 @@ export default function App() {
   return (
     <BrowserRouter basename={basename || undefined}>
       <Routes>
-        {/* Public attendee portal */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<RegisterPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/thanks" element={<ThanksPage />} />
-          <Route path="/status/:id" element={<StatusPage />} />
-          <Route path="/badge/:attendeeId" element={<BadgeRedirect />} />
-          <Route path="/verify/:badgeId" element={<VerifyPage />} />
-          <Route path="/verify-certificate/:certificateCode" element={<CertificatesPlaceholder />} />
-          <Route path="/certificate/:certificateCode" element={<CertificatesPlaceholder />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/levels" element={<LevelsPage />} />
+        {/* Attendee portal is hidden behind the welcome splash until check-in is finished */}
+        <Route element={<EventPortalGate />}>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<RegisterPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/thanks" element={<ThanksPage />} />
+            <Route path="/status/:id" element={<StatusPage />} />
+            <Route path="/badge/:attendeeId" element={<BadgeRedirect />} />
+            <Route path="/verify/:badgeId" element={<VerifyPage />} />
+            <Route path="/verify-certificate/:certificateCode" element={<CertificatesPlaceholder />} />
+            <Route path="/certificate/:certificateCode" element={<CertificatesPlaceholder />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/levels" element={<LevelsPage />} />
+          </Route>
+
+          {/* Live event modules (unlock after attendee check-in on this device; admins bypass) */}
+          <Route element={<PublicEventModuleGate />}>
+            <Route element={<PublicLayout />}>
+              <Route path="/teams" element={<TeamsPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/qa" element={<QAPage />} />
+              <Route path="/polls" element={<PollsPage />} />
+              <Route path="/certificates" element={<CertificatesPlaceholder />} />
+            </Route>
+          </Route>
         </Route>
 
         {/* Venue projector: public read-only displays, no check-in gate — use a separate browser from admin */}
@@ -81,17 +95,6 @@ export default function App() {
           <Route path="/display/teams" element={<TeamsDisplayPage />} />
           <Route path="/display/qa" element={<QADisplayPage />} />
           <Route path="/display/polls" element={<PollsDisplayPage />} />
-        </Route>
-
-        {/* Live event modules (unlock after attendee check-in on this device; admins bypass) */}
-        <Route element={<PublicEventModuleGate />}>
-          <Route element={<PublicLayout />}>
-            <Route path="/teams" element={<TeamsPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/qa" element={<QAPage />} />
-            <Route path="/polls" element={<PollsPage />} />
-            <Route path="/certificates" element={<CertificatesPlaceholder />} />
-          </Route>
         </Route>
 
         {/* Judges use this URL without attendee check-in session */}

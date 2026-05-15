@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS "EventSettings" (
     "mpesaTillOrPaybill" TEXT NOT NULL,
     "accountReferenceHint" TEXT NOT NULL DEFAULT 'Use your full name',
     "scheduleNote" TEXT NOT NULL DEFAULT '',
+    "checkInClosed" BOOLEAN NOT NULL DEFAULT false,
+    "teamsPublished" BOOLEAN NOT NULL DEFAULT false,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "EventSettings_pkey" PRIMARY KEY ("id")

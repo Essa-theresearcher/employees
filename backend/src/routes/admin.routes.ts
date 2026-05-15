@@ -28,6 +28,7 @@ import { getQaMetrics, listQuestions } from '../services/qaService.js';
 import { listPollsAdmin } from '../services/pollService.js';
 import { patchRegistrationSchema } from '../schemas/adminRegistration.js';
 import { updateEventSchema } from '../schemas/event.js';
+import { getEventPhase, setCheckInClosed } from '../services/eventPhaseService.js';
 
 const registrationStatusSchema = z.enum(['PENDING', 'VERIFIED', 'REJECTED']);
 
@@ -225,18 +226,20 @@ adminRouter.get(
 adminRouter.get(
   '/event',
   asyncHandler(async (_req, res) => {
-    const event = await prisma.eventSettings.findUnique({ where: { singletonKey: 1 } });
-    if (!event) return res.status(503).json({ success: false, message: 'Event not configured' });
+    const data = await getEventPhase();
+    return res.json({ success: true, data });
+  })
+);
+
+adminRouter.patch(
+  '/event/check-in',
+  asyncHandler(async (req, res) => {
+    const closed = req.body?.closed === true;
+    const data = await setCheckInClosed(closed);
     return res.json({
       success: true,
-      data: {
-        eventName: event.eventName,
-        amountKes: Number(event.amountKes),
-        mpesaChannelLabel: event.mpesaChannelLabel,
-        mpesaTillOrPaybill: event.mpesaTillOrPaybill,
-        accountReferenceHint: event.accountReferenceHint,
-        scheduleNote: event.scheduleNote
-      }
+      data,
+      message: closed ? 'Check-in closed. Attendees will see the portal when teams are published.' : 'Check-in reopened.'
     });
   })
 );
@@ -256,16 +259,7 @@ adminRouter.patch(
         ...(body.scheduleNote !== undefined ? { scheduleNote: body.scheduleNote } : {})
       }
     });
-    return res.json({
-      success: true,
-      data: {
-        eventName: event.eventName,
-        amountKes: Number(event.amountKes),
-        mpesaChannelLabel: event.mpesaChannelLabel,
-        mpesaTillOrPaybill: event.mpesaTillOrPaybill,
-        accountReferenceHint: event.accountReferenceHint,
-        scheduleNote: event.scheduleNote
-      }
-    });
+    const data = await getEventPhase();
+    return res.json({ success: true, data });
   })
 );

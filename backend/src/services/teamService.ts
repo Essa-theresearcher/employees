@@ -1,5 +1,6 @@
 import { prisma } from '../prisma.js';
 import { AppError } from '../utils/AppError.js';
+import { markTeamsPublished } from './eventPhaseService.js';
 
 export const MAX_TEAM_SIZE = 5;
 
@@ -92,6 +93,7 @@ export async function createTeam(input: {
     const created = await prisma.team.create({
       data: { teamName, description }
     });
+    await markTeamsPublished();
     return getTeam(created.id);
   } catch (e: unknown) {
     const code =
