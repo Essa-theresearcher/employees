@@ -76,7 +76,7 @@ export default function App() {
             <Route path="/levels" element={<LevelsPage />} />
           </Route>
 
-          {/* Live event modules (unlock after attendee check-in on this device; admins bypass) */}
+          {/* Live event modules (open when portal is live — see EventPortalGate) */}
           <Route element={<PublicEventModuleGate />}>
             <Route element={<PublicLayout />}>
               <Route path="/teams" element={<TeamsPage />} />

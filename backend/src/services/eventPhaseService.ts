@@ -11,7 +11,7 @@ export type EventPhaseDto = {
   checkInClosed: boolean;
   teamsPublished: boolean;
   teamCount: number;
-  /** Attendee portal (registration UI, levels, teams join) opens when both are true. */
+  /** Attendee portal opens once teams are published (live event for all visitors). */
   portalOpen: boolean;
 };
 
@@ -40,7 +40,7 @@ export async function getEventPhase(): Promise<EventPhaseDto> {
     checkInClosed,
     teamsPublished,
     teamCount,
-    portalOpen: checkInClosed && teamsPublished
+    portalOpen: teamsPublished
   };
 }
 
@@ -57,4 +57,9 @@ export async function markTeamsPublished(): Promise<void> {
     where: { singletonKey: 1 },
     data: { teamsPublished: true }
   });
+}
+
+export async function openAttendeePortal(): Promise<EventPhaseDto> {
+  await markTeamsPublished();
+  return getEventPhase();
 }

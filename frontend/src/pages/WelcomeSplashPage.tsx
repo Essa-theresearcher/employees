@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiGet } from '../lib/api';
 
 type Phase = {
@@ -42,18 +43,19 @@ export function WelcomeSplashPage() {
       />
       {phase && !phase.portalOpen ? (
         <div className="relative z-10 mt-10 max-w-md space-y-3 rounded-2xl border border-white/15 bg-black/40 px-6 py-5 text-sm text-white/85 backdrop-blur-sm">
-          <p className="font-semibold text-white">The attendee portal opens soon</p>
+          <p className="font-semibold text-white">The event portal opens soon</p>
           <ul className="space-y-1 text-left text-xs sm:text-sm">
-            <li className={phase.checkInClosed ? 'text-emerald-300' : 'text-white/70'}>
-              {phase.checkInClosed ? '\u2713' : '\u25cb'} Door check-in finished
-            </li>
             <li className={phase.teamsPublished ? 'text-emerald-300' : 'text-white/70'}>
-              {phase.teamsPublished ? '\u2713' : '\u25cb'} Teams published by organizers
-              {!phase.teamsPublished && phase.teamCount === 0 ? ' (none yet)' : ''}
+              {phase.teamsPublished ? '\u2713' : '\u25cb'} Organizers publish teams (or open the portal in admin)
+              {!phase.teamsPublished && phase.teamCount === 0 ? ' (waiting)' : ''}
             </li>
           </ul>
           <p className="text-xs text-white/60">
-            This page refreshes automatically. Already registered? Use the link from your badge QR.
+            This page refreshes automatically.             You can still{' '}
+            <Link to="/register" className="font-semibold text-white underline">
+              register here
+            </Link>
+            . Already registered? Scan your badge QR.
           </p>
         </div>
       ) : null}

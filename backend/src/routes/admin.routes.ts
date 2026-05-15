@@ -28,7 +28,7 @@ import { getQaMetrics, listQuestions } from '../services/qaService.js';
 import { listPollsAdmin } from '../services/pollService.js';
 import { patchRegistrationSchema } from '../schemas/adminRegistration.js';
 import { updateEventSchema } from '../schemas/event.js';
-import { getEventPhase, setCheckInClosed } from '../services/eventPhaseService.js';
+import { getEventPhase, openAttendeePortal, setCheckInClosed } from '../services/eventPhaseService.js';
 
 const registrationStatusSchema = z.enum(['PENDING', 'VERIFIED', 'REJECTED']);
 
@@ -239,7 +239,19 @@ adminRouter.patch(
     return res.json({
       success: true,
       data,
-      message: closed ? 'Check-in closed. Attendees will see the portal when teams are published.' : 'Check-in reopened.'
+      message: closed ? 'Door check-in closed.' : 'Check-in reopened.'
+    });
+  })
+);
+
+adminRouter.post(
+  '/event/open-portal',
+  asyncHandler(async (_req, res) => {
+    const data = await openAttendeePortal();
+    return res.json({
+      success: true,
+      data,
+      message: 'Attendee portal is now open for everyone.'
     });
   })
 );

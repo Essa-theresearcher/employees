@@ -1,66 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { WelcomeSplashPage } from '../pages/WelcomeSplashPage';
-import { apiGet } from '../lib/api';
 import { getAdminToken } from '../lib/auth';
-import { isPublicEventModulesUnlocked } from '../lib/eventModules';
+import { useEventPhase } from '../lib/useEventPhase';
 
-type Phase = {
-  portalOpen: boolean;
-};
-
-function isExemptPath(pathname: string, search: string): boolean {
+function isAlwaysPublicPath(pathname: string, search: string): boolean {
+  if (pathname === '/register' || pathname === '/thanks' || pathname === '/contact' || pathname === '/levels') {
+    return true;
+  }
   const id = new URLSearchParams(search).get('id')?.trim();
   if (id && (pathname === '/register' || pathname === '/')) return true;
   if (pathname.startsWith('/verify')) return true;
   return false;
 }
 
-/** Shows welcome splash until check-in is closed and organizers have published teams. */
+/** Welcome splash until organizers publish teams; registration is always reachable. */
 export function EventPortalGate() {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const [portalOpen, setPortalOpen] = useState<boolean | null>(null);
+  const { phase, loading } = useEventPhase();
 
   const adminToken = getAdminToken();
-  const exempt = isExemptPath(pathname, search);
-  const checkedInOnDevice = isPublicEventModulesUnlocked();
+  const alwaysPublic = isAlwaysPublicPath(pathname, search);
+  const portalOpen = Boolean(phase?.portalOpen);
+  const allowThrough = Boolean(adminToken || alwaysPublic || portalOpen);
 
   useEffect(() => {
-    if (adminToken || exempt || checkedInOnDevice) {
-      setPortalOpen(true);
-      return;
+    if (portalOpen && pathname === '/') {
+      navigate('/register', { replace: true });
     }
+  }, [navigate, pathname, portalOpen]);
 
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const res = await apiGet<{ success: boolean; data: Phase }>('/event');
-        if (!cancelled) {
-          setPortalOpen(res.data.portalOpen);
-          if (res.data.portalOpen && pathname === '/') {
-            navigate('/register', { replace: true });
-          }
-        }
-      } catch {
-        if (!cancelled) setPortalOpen(false);
-      }
-    }
-
-    void load();
-    const handle = window.setInterval(() => void load(), 20_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(handle);
-    };
-  }, [adminToken, checkedInOnDevice, exempt, navigate, pathname]);
-
-  if (adminToken || exempt || checkedInOnDevice) {
+  if (allowThrough) {
     return <Outlet />;
   }
 
-  if (portalOpen === null) {
+  if (loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-[#0a1628]">
         <p className="text-sm text-white/70">Loading…</p>
@@ -68,9 +43,5 @@ export function EventPortalGate() {
     );
   }
 
-  if (!portalOpen) {
-    return <WelcomeSplashPage />;
-  }
-
-  return <Outlet />;
+  return <WelcomeSplashPage />;
 }

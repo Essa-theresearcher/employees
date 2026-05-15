@@ -1,6 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiGet, apiPatchJson, ApiError } from '../../lib/api';
+import { apiGet, apiPatchJson, apiPostJson, ApiError } from '../../lib/api';
 import { clearAdminToken, getAdminToken } from '../../lib/auth';
 
 type EventDto = {
@@ -93,6 +93,22 @@ export function AdminSettingsPage() {
     }
   }
 
+  async function openPortalNow() {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await apiPostJson('/admin/event/open-portal', {}, token);
+      setSuccess('Attendee portal opened for everyone.');
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError) setError(err.message);
+      else setError('Could not open portal.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function setDoorCheckInClosed(closed: boolean) {
     setSaving(true);
     setError(null);
@@ -103,7 +119,7 @@ export function AdminSettingsPage() {
         { closed },
         token
       );
-      setSuccess(closed ? 'Check-in closed. Portal will open once teams are ready.' : 'Check-in reopened.');
+      setSuccess(closed ? 'Door check-in closed.' : 'Check-in reopened.');
       await load();
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
@@ -195,7 +211,7 @@ export function AdminSettingsPage() {
           <div>
             <h2 className="text-lg font-semibold text-brand-900">Attendee portal phase</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Portal opens only when door check-in is closed and at least one team exists.
+              Portal opens for everyone once teams are published (create a team or use Open portal below).
             </p>
             <div className="mt-3 space-y-1 text-sm text-slate-700">
               <p>
@@ -210,25 +226,37 @@ export function AdminSettingsPage() {
             </div>
           </div>
 
-          {checkInClosed ? (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void setDoorCheckInClosed(false)}
-              className="shrink-0 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-60"
-            >
-              Re-open check-in
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void setDoorCheckInClosed(true)}
-              className="shrink-0 rounded-2xl bg-brand-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-60"
-            >
-              Close check-in &amp; start portal
-            </button>
-          )}
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            {!portalOpen ? (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void openPortalNow()}
+                className="rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 disabled:opacity-60"
+              >
+                Open portal for everyone
+              </button>
+            ) : null}
+            {checkInClosed ? (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void setDoorCheckInClosed(false)}
+                className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-60"
+              >
+                Re-open check-in
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void setDoorCheckInClosed(true)}
+                className="rounded-2xl bg-brand-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-60"
+              >
+                Close door check-in
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

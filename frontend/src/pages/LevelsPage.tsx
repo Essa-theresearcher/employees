@@ -1,12 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { apiGet } from '../lib/api';
 import { getAdminToken } from '../lib/auth';
-import {
-  isPublicEventModulesUnlocked,
-  refreshEventAccessFromServer,
-  syncCheckedInEventAccessFromStatus
-} from '../lib/eventModules';
+import { useEventPhase } from '../lib/useEventPhase';
 
 type LevelKey = 'registration' | 'teams' | 'qa' | 'polls' | 'leaderboard' | 'certificates';
 
@@ -32,7 +27,7 @@ const LEVELS: LevelDef[] = [
     key: 'teams',
     level: 2,
     title: 'Team Formation',
-    lockedStatus: 'Opens after venue check-in',
+    lockedStatus: 'Opens when the event portal goes live',
     unlockedHref: '/teams',
     unlockedLabel: 'Enter teams'
   },
@@ -40,7 +35,7 @@ const LEVELS: LevelDef[] = [
     key: 'qa',
     level: 3,
     title: 'Live Q&A',
-    lockedStatus: 'Opens after venue check-in',
+    lockedStatus: 'Opens when the event portal goes live',
     unlockedHref: '/qa',
     unlockedLabel: 'Open Q&A'
   },
@@ -48,7 +43,7 @@ const LEVELS: LevelDef[] = [
     key: 'polls',
     level: 4,
     title: 'Polls',
-    lockedStatus: 'Opens after venue check-in',
+    lockedStatus: 'Opens when the event portal goes live',
     unlockedHref: '/polls',
     unlockedLabel: 'Open polls'
   },
@@ -56,7 +51,7 @@ const LEVELS: LevelDef[] = [
     key: 'leaderboard',
     level: 5,
     title: 'Leaderboard',
-    lockedStatus: 'Opens after venue check-in',
+    lockedStatus: 'Opens when the event portal goes live',
     unlockedHref: '/leaderboard',
     unlockedLabel: 'Open leaderboard'
   },
@@ -64,7 +59,7 @@ const LEVELS: LevelDef[] = [
     key: 'certificates',
     level: 6,
     title: 'Certificates',
-    lockedStatus: 'Opens after venue check-in',
+    lockedStatus: 'Opens when the event portal goes live',
     unlockedHref: '/certificates',
     unlockedLabel: 'Certificates'
   }
@@ -85,37 +80,8 @@ function LockGlyph({ className }: { className?: string }) {
 export function LevelsPage() {
   const [searchParams] = useSearchParams();
   const highlight = (searchParams.get('highlight') ?? '').toLowerCase();
-  const registrationId = searchParams.get('id')?.trim() ?? '';
-  const [unlocked, setUnlocked] = useState(
-    () => Boolean(getAdminToken()) || isPublicEventModulesUnlocked()
-  );
-
-  useEffect(() => {
-    if (getAdminToken() || isPublicEventModulesUnlocked()) {
-      setUnlocked(true);
-      return;
-    }
-    if (registrationId) {
-      void (async () => {
-        try {
-          const res = await apiGet<{ success: boolean; data: { checkedIn: boolean } }>(
-            `/registrations/${encodeURIComponent(registrationId)}/status`
-          );
-          syncCheckedInEventAccessFromStatus(registrationId, res.data.checkedIn);
-          setUnlocked(res.data.checkedIn);
-        } catch {
-          /* keep locked */
-        }
-      })();
-      return;
-    }
-    void refreshEventAccessFromServer(async (id) => {
-      const res = await apiGet<{ success: boolean; data: { checkedIn: boolean } }>(
-        `/registrations/${encodeURIComponent(id)}/status`
-      );
-      return Boolean(res.data.checkedIn);
-    }).then(setUnlocked);
-  }, [registrationId]);
+  const { phase } = useEventPhase();
+  const unlocked = Boolean(getAdminToken()) || Boolean(phase?.portalOpen);
   const cardRefs = useRef<Partial<Record<LevelKey, HTMLDivElement | null>>>({});
 
   const highlightKey = useMemo((): LevelKey | null => {
@@ -139,7 +105,7 @@ export function LevelsPage() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Progress map</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">Coffee and Code Event Levels</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-slate-600">
-            Follow the journey from registration to certificates. Complete each level as it opens during the event.
+            Follow the journey from registration to certificates. Explore each level as it opens during the event.
           </p>
         </div>
 
@@ -195,8 +161,7 @@ export function LevelsPage() {
                           <span className="text-sm font-semibold text-slate-600">Locked</span>
                         </div>
                         <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                          After organizers check you in, open your registration status link on this device once. Then
-                          return here — teams, Q&amp;A, polls, and the leaderboard unlock automatically for you.
+                          Organizers will open the portal when teams are ready. Registration is always available.
                         </p>
                       </div>
                     )}
@@ -235,15 +200,12 @@ export function LevelsPage() {
 
         <div className="mx-auto mt-4 max-w-lg rounded-3xl border border-brand-200 bg-gradient-to-br from-white to-brand-50 p-8 text-center shadow-soft">
           {unlocked ? (
-            <>
-              <p className="text-base font-semibold text-brand-900">You’re in — explore the event modules above.</p>
-            </>
+            <p className="text-base font-semibold text-brand-900">The event portal is live — explore the modules above.</p>
           ) : (
             <>
-              <p className="text-base font-semibold text-brand-900">Register, then get checked in at the venue.</p>
+              <p className="text-base font-semibold text-brand-900">Registration is open now.</p>
               <p className="mt-3 text-sm text-slate-600">
-                Bookmark your <strong>status page</strong> from your confirmation email. After staff check you in, open
-                that link once on this phone or browser to unlock teams, live Q&amp;A, polls, and the leaderboard.
+                Teams, live Q&amp;A, polls, and the leaderboard unlock for everyone once organizers publish teams.
               </p>
               <Link
                 to="/register"
