@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AttendeePortal } from '../components/AttendeePortal';
 import { ApiError, apiGet, apiPostMultipart } from '../lib/api';
 import { CONTRIBUTION_OPTIONS } from '../lib/labels';
 
@@ -14,6 +15,8 @@ type EventDto = {
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const attendeeId = searchParams.get('id')?.trim() ?? '';
   const [event, setEvent] = useState<EventDto | null>(null);
   const [eventLoadError, setEventLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,7 +109,7 @@ export function RegisterPage() {
         '/registrations',
         fd
       );
-      navigate(`/status/${res.data.id}`, { replace: true });
+      navigate(`/register?id=${encodeURIComponent(res.data.id)}`, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError('Something went wrong.');
@@ -146,6 +149,9 @@ export function RegisterPage() {
         </div>
 
         <div className="flex-1">
+          {attendeeId ? (
+            <AttendeePortal registrationId={attendeeId} />
+          ) : (
           <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-soft backdrop-blur-lg sm:p-8">
             <div className="mb-6 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-brand-900">Payment instructions</p>
@@ -339,6 +345,7 @@ export function RegisterPage() {
               </button>
             </form>
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,10 +4,11 @@ import { AppError } from '../utils/AppError.js';
 import { allocateNextBadgeId } from './badgeSerial.js';
 import { env } from '../config/env.js';
 
-/** Badge QR always points here; recomputed on read from `PUBLIC_APP_URL` so localhost is not baked in forever. */
+/** Badge QR → /register?id=…; built from PUBLIC_APP_URL (+ optional PUBLIC_APP_BASE_PATH for GitHub Pages). */
 export function buildBadgeQrTargetUrl(registrationId: string): string {
-  const base = env.publicAppUrl.replace(/\/+$/, '');
-  return `${base}/status/${encodeURIComponent(registrationId)}`;
+  const origin = env.publicAppUrl.replace(/\/+$/, '');
+  const prefix = env.publicAppBasePath;
+  return `${origin}${prefix}/register?id=${encodeURIComponent(registrationId)}`;
 }
 
 const normalizeMpesaCode = (code: string | undefined | null): string | null => {

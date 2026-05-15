@@ -17,6 +17,14 @@ const supabaseUrl = optional('SUPABASE_URL');
 const supabaseServiceRoleKey = optional('SUPABASE_SERVICE_ROLE_KEY');
 const supabaseStorageBucket = optional('SUPABASE_STORAGE_BUCKET') ?? 'registration-uploads';
 
+/** Path prefix where the SPA is mounted (e.g. GitHub Pages project site /repo-name/). Empty if PUBLIC_APP_URL already includes it. */
+function normalizePublicAppBasePath(raw: string | undefined): string {
+  const v = raw?.trim();
+  if (!v || v === '/') return '';
+  const p = v.startsWith('/') ? v : `/${v}`;
+  return p.replace(/\/+$/, '');
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 4000),
@@ -24,6 +32,7 @@ export const env = {
   jwtSecret: required('JWT_SECRET'),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   publicAppUrl: process.env.PUBLIC_APP_URL ?? 'http://localhost:5173',
+  publicAppBasePath: normalizePublicAppBasePath(optional('PUBLIC_APP_BASE_PATH')),
   uploadDir: process.env.UPLOAD_DIR ?? './uploads/screenshots',
 
   supabaseUrl,

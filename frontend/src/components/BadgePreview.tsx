@@ -52,8 +52,8 @@ export const BadgePreview = forwardRef<HTMLDivElement, Props>(function BadgePrev
             <QRCodeSVG value={qrValue} size={160} level="M" includeMargin />
           </div>
           <p className="max-w-[200px] text-center text-xs text-slate-500">
-            Scan to open your attendee page. Live modules (teams, Q&amp;A, polls, leaderboard) unlock on this device after
-            you are checked in at the door.
+            Scan to open your registration page. After check-in, open it once on this device to unlock teams, Q&amp;A,
+            polls, and the leaderboard.
           </p>
         </div>
       </div>

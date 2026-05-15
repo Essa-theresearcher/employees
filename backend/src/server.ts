@@ -30,6 +30,13 @@ async function main() {
   app.listen(env.port, () => {
     // eslint-disable-next-line no-console
     console.log(`API listening on port ${env.port}`);
+    if (env.nodeEnv === 'production' && /localhost|127\.0\.0\.1/i.test(env.publicAppUrl)) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[coffee-and-code] PUBLIC_APP_URL looks like localhost — badge QR codes will not open on phones. ' +
+          'Set PUBLIC_APP_URL to your live site (and PUBLIC_APP_BASE_PATH if the SPA uses a path prefix).'
+      );
+    }
   });
 }
 
