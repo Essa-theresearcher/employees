@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AttendeePortal } from '../components/AttendeePortal';
 import { ApiError, apiGet, apiPostMultipart } from '../lib/api';
+import { normalizeEventAmountKes, normalizeEventScheduleNote } from '../lib/eventDetails';
 import { CONTRIBUTION_OPTIONS } from '../lib/labels';
 import { previousCoffeeCodeWinners } from '../lib/previousWinners';
 
@@ -195,11 +196,15 @@ export function RegisterPage() {
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">Amount</dt>
-                    <dd className="font-semibold text-brand-900">Ksh {event.amountKes.toLocaleString()}</dd>
+                    <dd className="font-semibold text-brand-900">
+                      Ksh {normalizeEventAmountKes(event.amountKes).toLocaleString()}
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">Time</dt>
-                    <dd className="text-right font-semibold text-brand-900">{event.scheduleNote?.trim() || '4th July'}</dd>
+                    <dd className="text-right font-semibold text-brand-900">
+                      {normalizeEventScheduleNote(event.scheduleNote)}
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">{event.mpesaChannelLabel}</dt>

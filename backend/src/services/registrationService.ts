@@ -3,6 +3,7 @@ import { prisma } from '../prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { allocateNextBadgeId } from './badgeSerial.js';
 import { env } from '../config/env.js';
+import { normalizeEventAmountKes } from '../lib/eventDetails.js';
 
 /** Badge QR → /register?id=…; built from PUBLIC_APP_URL (+ optional PUBLIC_APP_BASE_PATH for GitHub Pages). */
 export function buildBadgeQrTargetUrl(registrationId: string): string {
@@ -66,7 +67,7 @@ export async function createRegistration(input: {
       await tx.payment.create({
         data: {
           registrationId: registration.id,
-          amountKes: event.amountKes,
+          amountKes: normalizeEventAmountKes(event.amountKes),
           method: input.paymentMethod,
           mpesaCode,
           verified: false

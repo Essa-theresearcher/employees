@@ -1,4 +1,5 @@
 import { prisma } from '../prisma.js';
+import { normalizeEventAmountKes, normalizeEventScheduleNote } from '../lib/eventDetails.js';
 import { isEventDayUnlocked } from '../lib/eventDay.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -34,11 +35,11 @@ export async function getEventPhase(): Promise<EventPhaseDto> {
 
   return {
     eventName: event.eventName,
-    amountKes: Number(event.amountKes),
+    amountKes: normalizeEventAmountKes(event.amountKes),
     mpesaChannelLabel: event.mpesaChannelLabel,
     mpesaTillOrPaybill: event.mpesaTillOrPaybill,
     accountReferenceHint: event.accountReferenceHint,
-    scheduleNote: event.scheduleNote,
+    scheduleNote: normalizeEventScheduleNote(event.scheduleNote),
     checkInClosed,
     teamsPublished,
     teamCount,
