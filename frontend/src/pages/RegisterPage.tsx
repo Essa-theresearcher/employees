@@ -11,6 +11,7 @@ type EventDto = {
   mpesaChannelLabel: string;
   mpesaTillOrPaybill: string;
   accountReferenceHint: string;
+  scheduleNote?: string;
 };
 
 export function RegisterPage() {
@@ -195,6 +196,10 @@ export function RegisterPage() {
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">Amount</dt>
                     <dd className="font-semibold text-brand-900">Ksh {event.amountKes.toLocaleString()}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-slate-500">Time</dt>
+                    <dd className="text-right font-semibold text-brand-900">{event.scheduleNote?.trim() || '4th July'}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">{event.mpesaChannelLabel}</dt>

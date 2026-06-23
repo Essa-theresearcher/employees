@@ -318,7 +318,7 @@ VALUES (
   'Send Money',
   '0723995078',
   'Use your full name',
-  '',
+  '4th July',
   NOW()
 )
 ON CONFLICT ("singletonKey") DO UPDATE SET

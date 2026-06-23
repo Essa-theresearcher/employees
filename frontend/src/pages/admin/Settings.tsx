@@ -186,7 +186,7 @@ export function AdminSettingsPage() {
           <input
             value={scheduleNote}
             onChange={(e) => setScheduleNote(e.target.value)}
-            placeholder="Optional internal note"
+            placeholder="e.g. 4th July"
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500/30 focus:ring-4"
           />
         </label>

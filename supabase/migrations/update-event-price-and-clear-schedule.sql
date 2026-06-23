@@ -4,6 +4,6 @@
 UPDATE "EventSettings"
 SET
   "amountKes" = 2500,
-  "scheduleNote" = '',
+  "scheduleNote" = '4th July',
   "updatedAt" = NOW()
 WHERE "singletonKey" = 1;

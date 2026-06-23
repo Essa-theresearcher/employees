@@ -19,7 +19,7 @@ async function main() {
     amountKes: 2500,
     mpesaChannelLabel: 'Send Money',
     mpesaTillOrPaybill: '0723995078',
-    scheduleNote: ''
+    scheduleNote: '4th July'
   };
 
   await prisma.eventSettings.upsert({
