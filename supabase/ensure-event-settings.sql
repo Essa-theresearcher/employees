@@ -16,11 +16,11 @@ VALUES (
   gen_random_uuid()::text,
   1,
   'Coffee & Code',
-  1000,
+  2500,
   'Send Money',
   '0723995078',
   'Use your full name',
-  'Please arrive from 4:30 PM onward.',
+  '',
   NOW()
 )
 ON CONFLICT ("singletonKey") DO UPDATE SET

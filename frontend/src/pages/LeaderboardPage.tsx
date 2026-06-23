@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiGet } from '../lib/api';
+import { previousCoffeeCodeWinners } from '../lib/previousWinners';
 
 const REFRESH_MS = 5000;
 
@@ -113,6 +114,43 @@ export function LeaderboardPage() {
             Last updated {lastUpdated.toLocaleTimeString()}
           </p>
         )}
+
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-100 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Last Coffee &amp; Code</p>
+            <h2 className="mt-1 text-lg font-bold text-brand-900">Previous winning teams</h2>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {previousCoffeeCodeWinners.map((winner) => (
+              <div
+                key={winner.rank}
+                className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-900 text-sm font-bold text-white">
+                    {winner.rank}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">{winner.teamName}</p>
+                    <p className="text-xs text-slate-500">
+                      {winner.memberCount} members · {winner.totalJudges} judges
+                    </p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-baseline gap-6 pl-14 sm:pl-0">
+                  <div className="text-right">
+                    <p className="text-xs font-semibold uppercase text-slate-500">Avg score</p>
+                    <p className="text-lg font-bold text-brand-900">{winner.averageScore.toFixed(2)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold uppercase text-slate-500">Total</p>
+                    <p className="text-lg font-bold text-slate-700">{winner.totalScore}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

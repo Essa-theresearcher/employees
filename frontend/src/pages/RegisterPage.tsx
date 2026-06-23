@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AttendeePortal } from '../components/AttendeePortal';
 import { ApiError, apiGet, apiPostMultipart } from '../lib/api';
 import { CONTRIBUTION_OPTIONS } from '../lib/labels';
+import { previousCoffeeCodeWinners } from '../lib/previousWinners';
 
 type EventDto = {
   eventName: string;
@@ -10,7 +11,6 @@ type EventDto = {
   mpesaChannelLabel: string;
   mpesaTillOrPaybill: string;
   accountReferenceHint: string;
-  scheduleNote: string;
 };
 
 export function RegisterPage() {
@@ -146,6 +146,36 @@ export function RegisterPage() {
               </p>
             </div>
           </div>
+          <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Last Coffee &amp; Code</p>
+                <h2 className="mt-1 text-lg font-bold text-brand-900">Winning teams</h2>
+              </div>
+              <span className="text-xs font-semibold text-slate-500">Top 5</span>
+            </div>
+            <div className="mt-4 divide-y divide-slate-100">
+              {previousCoffeeCodeWinners.map((winner) => (
+                <div key={winner.rank} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-900 text-xs font-bold text-white">
+                      {winner.rank}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900">{winner.teamName}</p>
+                      <p className="text-xs text-slate-500">
+                        {winner.memberCount} members · {winner.totalJudges} judges
+                      </p>
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Avg</p>
+                    <p className="text-sm font-bold text-brand-900">{winner.averageScore.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex-1">
@@ -166,12 +196,6 @@ export function RegisterPage() {
                     <dt className="text-slate-500">Amount</dt>
                     <dd className="font-semibold text-brand-900">Ksh {event.amountKes.toLocaleString()}</dd>
                   </div>
-                  {event.scheduleNote?.trim() ? (
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-slate-500">Time</dt>
-                      <dd className="text-right font-semibold text-brand-900">{event.scheduleNote.trim()}</dd>
-                    </div>
-                  ) : null}
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-500">{event.mpesaChannelLabel}</dt>
                     <dd className="font-semibold text-brand-900">{event.mpesaTillOrPaybill}</dd>

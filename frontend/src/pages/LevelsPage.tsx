@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getAdminToken } from '../lib/auth';
+import { EVENT_UNLOCK_LABEL, useEventDayUnlock } from '../lib/eventDay';
 import { useEventPhase } from '../lib/useEventPhase';
 
 type LevelKey = 'registration' | 'teams' | 'qa' | 'polls' | 'leaderboard' | 'certificates';
@@ -27,7 +28,7 @@ const LEVELS: LevelDef[] = [
     key: 'teams',
     level: 2,
     title: 'Team Formation',
-    lockedStatus: 'Opens when the event portal goes live',
+    lockedStatus: `Unlocks on ${EVENT_UNLOCK_LABEL}`,
     unlockedHref: '/teams',
     unlockedLabel: 'Enter teams'
   },
@@ -35,7 +36,7 @@ const LEVELS: LevelDef[] = [
     key: 'qa',
     level: 3,
     title: 'Live Q&A',
-    lockedStatus: 'Opens when the event portal goes live',
+    lockedStatus: `Unlocks on ${EVENT_UNLOCK_LABEL}`,
     unlockedHref: '/qa',
     unlockedLabel: 'Open Q&A'
   },
@@ -43,7 +44,7 @@ const LEVELS: LevelDef[] = [
     key: 'polls',
     level: 4,
     title: 'Polls',
-    lockedStatus: 'Opens when the event portal goes live',
+    lockedStatus: `Unlocks on ${EVENT_UNLOCK_LABEL}`,
     unlockedHref: '/polls',
     unlockedLabel: 'Open polls'
   },
@@ -51,7 +52,7 @@ const LEVELS: LevelDef[] = [
     key: 'leaderboard',
     level: 5,
     title: 'Leaderboard',
-    lockedStatus: 'Opens when the event portal goes live',
+    lockedStatus: `Unlocks on ${EVENT_UNLOCK_LABEL}`,
     unlockedHref: '/leaderboard',
     unlockedLabel: 'Open leaderboard'
   },
@@ -59,7 +60,7 @@ const LEVELS: LevelDef[] = [
     key: 'certificates',
     level: 6,
     title: 'Certificates',
-    lockedStatus: 'Opens when the event portal goes live',
+    lockedStatus: `Unlocks on ${EVENT_UNLOCK_LABEL}`,
     unlockedHref: '/certificates',
     unlockedLabel: 'Certificates'
   }
@@ -81,7 +82,10 @@ export function LevelsPage() {
   const [searchParams] = useSearchParams();
   const highlight = (searchParams.get('highlight') ?? '').toLowerCase();
   const { phase } = useEventPhase();
-  const unlocked = Boolean(getAdminToken()) || Boolean(phase?.portalOpen);
+  const eventDayUnlocked = useEventDayUnlock();
+  const adminUnlocked = Boolean(getAdminToken());
+  const portalUnlocked = Boolean(phase?.portalOpen);
+  const unlocked = adminUnlocked || (eventDayUnlocked && portalUnlocked);
   const cardRefs = useRef<Partial<Record<LevelKey, HTMLDivElement | null>>>({});
 
   const highlightKey = useMemo((): LevelKey | null => {
@@ -161,7 +165,9 @@ export function LevelsPage() {
                           <span className="text-sm font-semibold text-slate-600">Locked</span>
                         </div>
                         <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                          Organizers will open the portal when teams are ready. Registration is always available.
+                          {eventDayUnlocked
+                            ? 'Organizers will open the portal when teams are ready. Registration is always available.'
+                            : `These levels open on ${EVENT_UNLOCK_LABEL}. Registration is always available.`}
                         </p>
                       </div>
                     )}
@@ -201,6 +207,19 @@ export function LevelsPage() {
         <div className="mx-auto mt-4 max-w-lg rounded-3xl border border-brand-200 bg-gradient-to-br from-white to-brand-50 p-8 text-center shadow-soft">
           {unlocked ? (
             <p className="text-base font-semibold text-brand-900">The event portal is live — explore the modules above.</p>
+          ) : !eventDayUnlocked ? (
+            <>
+              <p className="text-base font-semibold text-brand-900">Registration is open now.</p>
+              <p className="mt-3 text-sm text-slate-600">
+                Teams, live Q&amp;A, polls, the leaderboard, and certificates unlock on {EVENT_UNLOCK_LABEL}.
+              </p>
+              <Link
+                to="/register"
+                className="mt-5 inline-flex justify-center rounded-2xl bg-brand-900 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-brand-700"
+              >
+                Register
+              </Link>
+            </>
           ) : (
             <>
               <p className="text-base font-semibold text-brand-900">Registration is open now.</p>

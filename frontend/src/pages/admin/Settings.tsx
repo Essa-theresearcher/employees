@@ -2,6 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiGet, apiPatchJson, apiPostJson, ApiError } from '../../lib/api';
 import { clearAdminToken, getAdminToken } from '../../lib/auth';
+import { EVENT_UNLOCK_LABEL } from '../../lib/eventDay';
 
 type EventDto = {
   eventName: string;
@@ -133,7 +134,9 @@ export function AdminSettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-brand-900">Event settings</h1>
-        <p className="text-sm text-slate-600">Public values shown on the registration page.</p>
+        <p className="text-sm text-slate-600">
+          Public values shown on the registration page. Event levels unlock on {EVENT_UNLOCK_LABEL}.
+        </p>
       </div>
 
       {error && <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
@@ -183,7 +186,7 @@ export function AdminSettingsPage() {
           <input
             value={scheduleNote}
             onChange={(e) => setScheduleNote(e.target.value)}
-            placeholder="e.g. Please arrive from 4:30 PM onward."
+            placeholder="Optional internal note"
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500/30 focus:ring-4"
           />
         </label>
@@ -211,7 +214,7 @@ export function AdminSettingsPage() {
           <div>
             <h2 className="text-lg font-semibold text-brand-900">Attendee portal phase</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Portal opens for everyone once teams are published (create a team or use Open portal below).
+              Portal opens for everyone on {EVENT_UNLOCK_LABEL} once teams are published.
             </p>
             <div className="mt-3 space-y-1 text-sm text-slate-700">
               <p>

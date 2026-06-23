@@ -16,10 +16,10 @@ async function main() {
   });
 
   const eventDefaults = {
-    amountKes: 1000,
+    amountKes: 2500,
     mpesaChannelLabel: 'Send Money',
     mpesaTillOrPaybill: '0723995078',
-    scheduleNote: 'Please arrive from 4:30 PM onward.'
+    scheduleNote: ''
   };
 
   await prisma.eventSettings.upsert({

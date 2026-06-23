@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { apiDelete, apiGet, apiPatchJson, apiPostJson, ApiError } from '../../lib/api';
 import { clearAdminToken, getAdminToken } from '../../lib/auth';
+import { EVENT_UNLOCK_LABEL } from '../../lib/eventDay';
 import { Link, useNavigate } from 'react-router-dom';
 
 type Metrics = {
@@ -716,7 +717,7 @@ export function AdminDashboard() {
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-brand-900">Public payment instructions</h2>
         <p className="mt-1 text-sm text-slate-600">
-          These values appear on the registration page. Updating here updates what attendees see on refresh.
+          These values appear on the registration page. Event levels unlock on {EVENT_UNLOCK_LABEL}.
         </p>
 
         <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={onSaveEvent}>
@@ -757,11 +758,11 @@ export function AdminDashboard() {
             />
           </label>
           <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
-            Schedule note (shown publicly)
+            Schedule note
             <input
               value={scheduleNote}
               onChange={(e) => setScheduleNote(e.target.value)}
-              placeholder="e.g. Please arrive from 4:30 PM onward."
+              placeholder="Optional internal note"
               className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none ring-brand-500/30 focus:ring-4"
             />
           </label>

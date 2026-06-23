@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiGet } from '../lib/api';
+import { EVENT_UNLOCK_LABEL } from '../lib/eventDay';
 
 type Phase = {
   portalOpen: boolean;
@@ -45,6 +46,7 @@ export function WelcomeSplashPage() {
         <div className="relative z-10 mt-10 max-w-md space-y-3 rounded-2xl border border-white/15 bg-black/40 px-6 py-5 text-sm text-white/85 backdrop-blur-sm">
           <p className="font-semibold text-white">The event portal opens soon</p>
           <ul className="space-y-1 text-left text-xs sm:text-sm">
+            <li className="text-white/70">○ Event levels unlock on {EVENT_UNLOCK_LABEL}</li>
             <li className={phase.teamsPublished ? 'text-emerald-300' : 'text-white/70'}>
               {phase.teamsPublished ? '\u2713' : '\u25cb'} Organizers publish teams (or open the portal in admin)
               {!phase.teamsPublished && phase.teamCount === 0 ? ' (waiting)' : ''}

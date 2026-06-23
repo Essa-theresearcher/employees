@@ -1,4 +1,5 @@
 import { prisma } from '../prisma.js';
+import { isEventDayUnlocked } from '../lib/eventDay.js';
 import { AppError } from '../utils/AppError.js';
 
 export type EventPhaseDto = {
@@ -11,7 +12,7 @@ export type EventPhaseDto = {
   checkInClosed: boolean;
   teamsPublished: boolean;
   teamCount: number;
-  /** Attendee portal opens once teams are published (live event for all visitors). */
+  /** Attendee portal opens on event day once teams are published. */
   portalOpen: boolean;
 };
 
@@ -29,6 +30,7 @@ export async function getEventPhase(): Promise<EventPhaseDto> {
 
   const teamsPublished = event.teamsPublished || teamCount > 0;
   const checkInClosed = event.checkInClosed;
+  const eventDayUnlocked = isEventDayUnlocked();
 
   return {
     eventName: event.eventName,
@@ -40,7 +42,7 @@ export async function getEventPhase(): Promise<EventPhaseDto> {
     checkInClosed,
     teamsPublished,
     teamCount,
-    portalOpen: teamsPublished
+    portalOpen: eventDayUnlocked && teamsPublished
   };
 }
 
